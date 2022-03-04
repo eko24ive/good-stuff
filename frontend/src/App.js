@@ -24,7 +24,7 @@ ChartJS.register(
   Legend
 );
 
-const API = ''
+const API = window.location.origin.indexOf('localhost') === -1 ? '' : 'http://localhost:9898'
 
 function App() {
   const $ta = useRef();
@@ -43,6 +43,7 @@ function App() {
   const [loadingState, setLoadingState] = useState({})
 
   const setLoading = (apiKey, loading) => {
+    console.log(`setting state ${loading} for ${apiKey}`)
     setLoadingState(prev => ({
       ...prev,
       [apiKey]: loading

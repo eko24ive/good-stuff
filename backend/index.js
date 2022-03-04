@@ -265,7 +265,7 @@ app.delete('/all', async (req, res) => {
 
   await delay(2000)
 
-  res.send('ok')
+  res.send({ok:'ok'})
 })
 
 app.delete('/:id', async (req, res) => {
