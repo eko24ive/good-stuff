@@ -24,17 +24,21 @@ ChartJS.register(
   Legend
 );
 
-
 const API = 'http://localhost:9898'
 
-
 function App() {
-  const ta = useRef();
+  const $ta = useRef();
+  const $login = useRef();
+  const $password = useRef();
   const [state, setState] = useState({
     perf: []
   })
 
   const [apiKeys, setApiKeys] = useState([])
+  const [creds, setCreds] = useState({
+    login: '',
+    password: ''
+  })
 
   const getAllData = async (keys) => {
     for (let apiKey of keys) {
@@ -44,6 +48,13 @@ function App() {
 
   useEffect(() => {
     const storedKeys = localStorage.getItem('keys')
+    const storedCreds = localStorage.getItem('creds')
+
+    if (storedCreds && creds.password === '' && creds.password === '') {
+      const c = JSON.parse(storedCreds)
+
+      setCreds(c)
+    }
 
     if (storedKeys && apiKeys.length === 0) {
       const p = JSON.parse(storedKeys)
@@ -164,7 +175,13 @@ function App() {
       },
     })
 
-    let np = [...state.perf[apiKey]]
+    let np
+    if (state.perf[apiKey]) {
+      np = [...state.perf[apiKey]]
+    } else {
+      np = []
+    }
+
     np[index] = perf
 
     console.log(np)
@@ -199,9 +216,13 @@ function App() {
     const name = prompt("enter name:")
 
     await getApi(`create/${name}`, {
+      method: 'POST',
       headers: {
         'X-Token': apiKey,
-      }
+      },
+      body: JSON.stringify({
+        creds,
+      })
     })
 
     await getData(apiKey)
@@ -223,7 +244,8 @@ function App() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        names
+        names,
+        creds,
       })
     })
 
@@ -268,19 +290,41 @@ function App() {
     setApiKeys([])
     window.localStorage.removeItem('keys')
 
-    const keys = ta.current.value.split('\n').map(k => k.trim()).filter(k => k !== undefined && k !== '' && k !== null)
+    const keys = $ta.current.value.split('\n').map(k => k.trim()).filter(k => k !== undefined && k !== '' && k !== null)
+    const login = $login.current.value.trim()
+    const password = $password.current.value.trim()
 
     if (keys.length === 0) {
       alert('invalid keys')
       return;
     }
 
+    if(!login || !password) {
+      alert('invalid credentials')
+      return;
+    }
+
     window.localStorage.setItem('keys', JSON.stringify(keys))
+    window.localStorage.setItem('creds', JSON.stringify({login, password}))
     console.log(keys)
+
+    let perf = {}
+
+    keys.forEach(k => perf[k] = [])
 
     setApiKeys(keys)
 
-    getAllData()
+
+    setCreds({
+      login,
+      password
+    })
+    setState({
+      ...state,
+      perf
+    })
+
+    getAllData(keys)
   }
 
   const fillDroplets = apiKey => async () => {
@@ -291,59 +335,83 @@ function App() {
     const prefix = prompt("prefix:")
 
     await getApi(`fill/${prefix}`, {
+      method: 'POST',
       headers: {
         'X-Token': apiKey,
         'Content-Type': 'application/json'
       },
+      body: JSON.stringify({
+        creds
+      })
     })
 
     await getData(apiKey)
   }
 
   return (
-    <>
-      <Style.Container>
-        <textarea ref={ta} defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}>
-        </textarea>
-        <br />
-        <button onClick={processApiKeys}>Process keys</button>
-      </Style.Container>
-      {apiKeys.length > 0 && <>
-        {apiKeys.map(apiKey => (
-          <Style.Container key={apiKey}>
-            <h1>{apiKey}</h1>
-            <button onClick={getPerf(apiKey)}>Get Perf All</button>
-            <button onClick={() => getData(apiKey)}>Refresh</button>
-            <button onClick={createDroplet(apiKey)}>Create</button>
-            <button onClick={deleteAllDroplet(apiKey)}>Delete All</button>
-            <button onClick={createDroplets(apiKey)}>Create droplets</button>
-            <button onClick={fillDroplets(apiKey)}>Fill remaining</button>
-            {state[apiKey] && state[apiKey].map((droplet, index) => {
+    <div className='container-fluid'>
+      <>
+          <div className="row">
+            <div className="col-9">
+              <label for="exampleInputEmail1" className="form-label">Api key:</label>
+              <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}>
+              </textarea>
+            </div>
+            <div className="col-3">
+              <label for="exampleInputEmail1" className="form-label">Login:</label>
+              <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
+              <label for="exampleInputEmail1" className="form-label">Password:</label>
+              <input type="text" ref={$password} className="form-control mb-1" defaultValue={creds.password} />
+            </div>
+          </div>
+          <button className="btn btn-primary" onClick={processApiKeys}>Process keys</button>
 
-              return (
-                <Style.DropletInfo key={droplet.id}>
-                  <Style.Ident>
-                    <Style.Name>{droplet.name}</Style.Name>
-                    <Style.ID>#{droplet.id}</Style.ID>
-                  </Style.Ident>
-                  <Style.ButtonContainer>
-                    <button onClick={updatePerf(droplet.id, index, apiKey)}>update perf</button>
-                    <button onClick={hardRestart(droplet.id, droplet.name, apiKey)}>hard restart</button>
-                    <button onClick={deleteDroplet(droplet.id, apiKey)}>delete</button>
-                  </Style.ButtonContainer>
-                  <Style.ChartContainer>
-                    {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
-                  </Style.ChartContainer>
-                </Style.DropletInfo>
-              )
-            })}
-            <hr />
+        {apiKeys.length > 0 && <>
+          {apiKeys.map(apiKey => (
+            <div className="card mb-2" key={apiKey}>
+              <div className="card-body">
+                <h5 className="card-title">{apiKey}</h5>
 
-          </Style.Container>
-        ))}
-      </>}
+                  <div className="btn-group mb-3">
+                    <button className="btn btn-sm btn-primary" onClick={getPerf(apiKey)}>Get Perf All</button>
+                    <button className="btn btn-sm btn-primary" onClick={() => getData(apiKey)}>Refresh</button>
+                    <button className="btn btn-sm btn-primary" onClick={createDroplet(apiKey)}>Create</button>
+                    <button className="btn btn-sm btn-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
+                    <button className="btn btn-sm btn-primary" onClick={fillDroplets(apiKey)}>Fill remaining</button>
+                    <button className="btn btn-sm btn-danger" onClick={deleteAllDroplet(apiKey)}>Delete All</button>
+                  </div>
+                  {state[apiKey] && state[apiKey].map((droplet, index) => {
 
-    </>
+                    return (
+                      <div className="row mb-1" key={droplet.id}>
+                        <div className="col-4">
+                          <Style.Ident>
+                            <Style.Name>{droplet.name}</Style.Name>
+                            <Style.ID>#{droplet.id}</Style.ID>
+                          </Style.Ident>
+                        </div>
+                        <div className="col-4">
+                          <div className="btn-group">
+                            <button className="btn btn-sm btn-primary" onClick={updatePerf(droplet.id, index, apiKey)}>update perf</button>
+                            <button className="btn btn-sm btn-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}>hard restart</button>
+                            <button className="btn btn-sm btn-primary" onClick={deleteDroplet(droplet.id, apiKey)}>delete</button>
+                          </div>
+                        </div>
+                        <div className="col-4">
+                          <Style.ChartContainer>
+                            {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
+                          </Style.ChartContainer>
+                        </div>
+                      </div>
+                    )
+                  })}
+              </div>
+            </div>
+          ))}
+        </>}
+
+      </>
+    </div>
   );
 }
 

