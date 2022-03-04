@@ -130,7 +130,9 @@ app.post('/fill/:prefix', async (req, res) => {
     x.push(c)
   }
 
-  res.send('x')
+  await delay(2000)
+
+  res.send(x)
 })
 
 app.get('/restart/:id/:name', async (req, res) => {
@@ -142,6 +144,8 @@ app.get('/restart/:id/:name', async (req, res) => {
       Authorization: `Bearer ${req.headers['x-token']}`,
     }
   })
+
+  await delay(1000)
 
   const c = await requestDO('droplets', {
     headers: {
@@ -158,6 +162,8 @@ app.get('/restart/:id/:name', async (req, res) => {
     })
   })
 
+  await delay(2000)
+
   res.send(c)
 })
 
@@ -173,6 +179,8 @@ app.post('/create/:name', async (req, res) => {
     method: "POST",
     body: getInstanceTemplate({...creds, name, exec})
   })
+
+  await delay(2000)
 
   res.send(c)
 })
@@ -200,6 +208,8 @@ app.post('/createAll', async (req, res) => {
 
     x.push(c)
   }
+
+  await delay(2000)
 
   res.send(x)
 })
@@ -230,6 +240,8 @@ app.post('/perf/:id', async (req, res) => {
     }
   })
 
+  await delay(2000)
+
   res.send(perf)
 });
 
@@ -251,6 +263,8 @@ app.delete('/all', async (req, res) => {
     })
   })
 
+  await delay(2000)
+
   res.send('ok')
 })
 
@@ -263,6 +277,8 @@ app.delete('/:id', async (req, res) => {
       Authorization: `Bearer ${req.headers['x-token']}`,
     }
   })
+
+  await delay(2000)
 
   res.send(req.params)
 })

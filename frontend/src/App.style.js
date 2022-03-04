@@ -39,6 +39,33 @@ const ChartContainer = styled.div`
 /* height: 60px; */
 `
 
+const ProgressContainer = styled.div`
+    background: rgb(0 0 0 / 70%);
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10rem;
+
+    & i {
+      animation-name: spin;
+      animation-duration: 1000ms;
+      animation-iteration-count: infinite;
+      animation-timing-function: linear;
+
+      @keyframes spin {
+        from {transform:rotate(0deg);}
+        to {transform:rotate(360deg);}
+      }
+    }
+`
+
 const Style = {
   Container,
   DropletInfo,
@@ -46,6 +73,7 @@ const Style = {
   Name,
   ButtonContainer,
   Ident,
+  ProgressContainer,
   ID
 }
 
