@@ -1,0 +1,20 @@
+{
+  "name": "droplets-network",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "sh ./build.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eko24ive/good-stuff.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eko24ive/good-stuff/issues"
+  },
+  "homepage": "https://github.com/eko24ive/good-stuff#readme"
+}
