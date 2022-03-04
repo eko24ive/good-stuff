@@ -24,7 +24,7 @@ ChartJS.register(
   Legend
 );
 
-const API = 'http://localhost:9898'
+const API = ''
 
 function App() {
   const $ta = useRef();
