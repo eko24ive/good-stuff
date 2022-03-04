@@ -16,17 +16,17 @@ const token = '';
 const dateNow = () => Math.floor(Date.now() * 0.001)
 
 function delay(time) {
-  return new Promise(function(resolve) {
-      setTimeout(resolve, time)
+  return new Promise(function (resolve) {
+    setTimeout(resolve, time)
   });
 }
 
 app.use(express.static(path.join(__dirname, '../frontend/build/')))
 
-const staticHandler = function(req, res) {
+const staticHandler = function (req, res) {
   const url = `${req.headers['x-forwarded-proto'] ? 'https://' : 'http://'}${req.hostname}${req.originalUrl}`;
 
-  const filePath = path.join(__dirname,'..','frontend','build','index.html');
+  const filePath = path.join(__dirname, '..', 'frontend', 'build', 'index.html');
 
   res.sendFile(filePath);
 }
@@ -34,9 +34,9 @@ const staticHandler = function(req, res) {
 
 app.get('/', staticHandler);
 
-const getInstanceTemplate = ({login, password, names, name, exec}) => {
+const getInstanceTemplate = ({ login, password, names, name, exec }) => {
   console.log(`using command:\n${exec}`);
-  if(names) {
+  if (names) {
     return JSON.stringify({
       "names": names,
       "region": "fra1",
@@ -46,7 +46,7 @@ const getInstanceTemplate = ({login, password, names, name, exec}) => {
     })
   }
 
-  if(name) {
+  if (name) {
     return JSON.stringify({
       "name": name,
       "region": "fra1",
@@ -124,7 +124,7 @@ app.post('/fill/:prefix', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: getInstanceTemplate({...creds, names, exec})
+      body: getInstanceTemplate({ ...creds, names, exec })
     })
 
     x.push(c)
@@ -177,7 +177,7 @@ app.post('/create/:name', async (req, res) => {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: getInstanceTemplate({...creds, name, exec})
+    body: getInstanceTemplate({ ...creds, name, exec })
   })
 
   await delay(2000)
@@ -203,7 +203,7 @@ app.post('/createAll', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: getInstanceTemplate({...creds, names, exec})
+      body: getInstanceTemplate({ ...creds, names, exec })
     })
 
     x.push(c)
@@ -265,7 +265,7 @@ app.delete('/all', async (req, res) => {
 
   await delay(2000)
 
-  res.send({ok:'ok'})
+  res.send({ ok: 'ok' })
 })
 
 app.delete('/:id', async (req, res) => {
