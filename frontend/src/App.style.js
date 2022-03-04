@@ -46,7 +46,7 @@ const ProgressContainer = styled.div`
     right: 0;
     top: 0;
     bottom: 0;
-    z-index: 1;
+    z-index: 500;
     color: white;
     display: flex;
     align-items: center;
