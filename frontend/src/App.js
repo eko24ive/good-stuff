@@ -120,13 +120,13 @@ function App() {
       })
     })
 
-    setState({
-      ...state,
+    setState(prev => ({
+      ...prev,
       perf: {
-        ...state.perf,
+        ...prev.perf,
         [apiKey]: perf
       }
-    })
+    }))
     setLoading(apiKey, false)
   }
 
@@ -193,22 +193,27 @@ function App() {
       },
     })
 
-    let np
-    if (state.perf[apiKey]) {
-      np = [...state.perf[apiKey]]
-    } else {
-      np = []
-    }
 
-    np[index] = perf
 
-    setState(prev => ({
-      ...prev,
-      perf: {
-        ...state.perf,
-        [apiKey]: np
+    setState(prev => {
+      let np
+
+      if (prev.perf[apiKey]) {
+        np = [...prev.perf[apiKey]]
+      } else {
+        np = []
       }
-    }))
+
+      np[index] = perf
+
+      return ({
+        ...prev,
+        perf: {
+          ...prev.perf,
+          [apiKey]: np
+        }
+      })
+    })
     setLoading(apiKey, false)
   }
 
@@ -419,13 +424,13 @@ function App() {
           <div className="col">
             <h4>Strategy</h4>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')} checked={strategy === 'custom'}/>
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')} checked={strategy === 'custom'} />
               <label className="form-check-label" htmlFor="flexRadioDefault1">
                 Custom
               </label>
             </div>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} disabled/>
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} disabled />
               <label className="form-check-label" htmlFor="flexRadioDefault2">
                 DB1000N
               </label>
@@ -448,9 +453,9 @@ function App() {
         <hr />
         <div className="col">
           <div className="row">
-          {apiKeys.length > 0 && <>
-            <h5>Total instances: {apiKeys.map(k => state[k]).flat().length}</h5>
-          </>}
+            {apiKeys.length > 0 && <>
+              <h5>Total instances: {apiKeys.map(k => state[k]).flat().length}</h5>
+            </>}
           </div>
         </div>
         <hr className='my-4' />
