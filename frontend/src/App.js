@@ -425,7 +425,7 @@ function App() {
               </label>
             </div>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} />
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} disabled/>
               <label className="form-check-label" htmlFor="flexRadioDefault2">
                 DB1000N
               </label>
