@@ -32,7 +32,7 @@ function App() {
   const $password = useRef();
   const $exec = useRef();
   const [state, setState] = useState({
-    perf: []
+    perf: {}
   })
 
   const [apiKeys, setApiKeys] = useState([])
@@ -248,6 +248,14 @@ function App() {
       },
     })
 
+    setState(prev => ({
+      ...prev,
+      perf: {
+        ...prev.perf,
+        [apiKey]: prev.perf[apiKey].filter(d => d.id !== id)
+      }
+    }))
+
     await getData(apiKey)
     setLoading(apiKey, false)
 
@@ -270,13 +278,15 @@ function App() {
     await getData(apiKey)
     setState(prev => ({
       ...prev,
-      perf: []
+      perf: {
+        ...prev.perf,
+        [apiKey]: []
+      }
     }))
     setLoading(apiKey, false)
   }
 
   const processApiKeys = () => {
-
     setApiKeys([])
     window.localStorage.removeItem('keys')
 
