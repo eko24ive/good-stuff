@@ -445,6 +445,14 @@ function App() {
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
+        <hr />
+        <div className="col">
+          <div className="row">
+          {apiKeys.length > 0 && <>
+            <h5>Total instances: {apiKeys.map(k => state[k]).flat().length}</h5>
+          </>}
+          </div>
+        </div>
         <hr className='my-4' />
         {apiKeys.length > 0 && <>
           {apiKeys.map(apiKey => (
