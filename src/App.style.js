@@ -66,6 +66,11 @@ const ProgressContainer = styled.div`
     }
 `
 
+const Fleet = styled.div`
+  height: 470px;
+  overflow-y: scroll;
+`
+
 const Style = {
   Container,
   DropletInfo,
@@ -74,7 +79,8 @@ const Style = {
   ButtonContainer,
   Ident,
   ProgressContainer,
-  ID
+  ID,
+  Fleet
 }
 
 export default Style

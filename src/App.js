@@ -9,12 +9,10 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import moment from 'moment';
-import { Line } from 'react-chartjs-2';
+import { chunk } from 'lodash'
 
 import api from './api/api'
-
-import Style from './App.style'
+import Fleet from './components/Fleet'
 
 ChartJS.register(
   CategoryScale,
@@ -65,9 +63,7 @@ function App() {
   },[])
 
   const getAllData = useCallback(async (keys) => {
-    for (let apiKey of keys) {
-      getData(apiKey)
-    }
+    keys.forEach(apiKey => getData(apiKey))
   }, [getData])
 
   useEffect(() => {
@@ -89,71 +85,8 @@ function App() {
     }
   }, [apiKeys.length, creds.password, getAllData])
 
-  const getPerf = apiKey => async () => {
-    const dropletsIds = state[apiKey].map(d => d.id)
-    setLoading(apiKey, true)
-
-    const perf = await api.getPerformanceByApiKey({
-      apiKey,
-      dropletsIds
-    })
-
-    setState(prev => ({
-      ...prev,
-      perf: {
-        ...prev.perf,
-        [apiKey]: perf
-      }
-    }))
-    setLoading(apiKey, false)
-  }
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: true,
-    animation: {
-      duration: 0,
-    },
-    hover: {
-      animationDuration: 0,
-    },
-    responsiveAnimationDuration: 0,
-    plugins: {
-      legend: {
-        display: false,
-        position: 'top',
-      },
-      title: {
-        display: false,
-        text: 'Chart.js Line Chart',
-      },
-    },
-  };
-
-  const renderChart = (perfData) => {
-    if (!perfData) {
-      return null
-    }
-
-    const labels = perfData.map(p => moment(p[0] * 1000).format('HH:mm'))
-
-    const data = {
-      labels,
-      datasets: [
-        {
-          label: 'Dataset 1',
-          data: perfData.map(p => Number(p[1])),
-          borderColor: 'rgb(255, 99, 132)',
-          backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        }
-      ],
-    };
-
-    return <Line options={options} data={data} />
-  }
-
   const updatePerf = (id, index, apiKey) => async () => {
-    setLoading(apiKey, true)
+    // setLoading(apiKey, true)
 
     const perf = await api.getPerformanceById({
       id,
@@ -179,7 +112,15 @@ function App() {
         }
       })
     })
-    setLoading(apiKey, false)
+    // setLoading(apiKey, false)
+  }
+
+  const getPerf = apiKey => async () => {
+    const dropletsIds = state[apiKey].map(d => d.id)
+
+    dropletsIds.forEach((d, i) => {
+      updatePerf(d, i, apiKey)()
+    })
   }
 
   const hardRestart = (id, name, apiKey) => async () => {
@@ -221,7 +162,6 @@ function App() {
 
     await getData(apiKey)
     setLoading(apiKey, false)
-
   }
 
   const deleteAllDroplet = apiKey => async () => {
@@ -411,51 +351,42 @@ function App() {
         </div>
         <hr className='my-4' />
         {apiKeys.length > 0 && <>
-          {apiKeys.map(apiKey => (
-            <div className="card mb-2" key={apiKey}>
-              {loadingState[apiKey] && <Style.ProgressContainer>
-                <i className="bi bi-arrow-clockwise"></i>
-              </Style.ProgressContainer>}
-              <div className="card-body">
-                <h5 className="card-title">{apiKey}</h5>
-                <div className="btn-group mb-3">
-                  <button className="btn btn-outline-primary" onClick={getPerf(apiKey)}><i className="bi bi-graph-up"></i></button>
-                  <button className="btn btn-outline-primary" onClick={() => getData(apiKey)}><i className="bi bi-arrow-clockwise"></i></button>
-                </div>
-                <div className="btn-group mb-3 mx-3">
-                  <button className="btn btn-outline-primary" onClick={createDroplet(apiKey)}><i className="bi bi-plus-lg"></i></button>
-                  <button className="btn btn-outline-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
-                  <button className="btn btn-outline-primary" onClick={fillDroplets(apiKey)}>Fill remaining</button>
-                </div>
-                <div className="btn-group mb-3">
-                  <button className="btn btn-outline-danger" onClick={deleteAllDroplet(apiKey)}><i className="bi bi-trash"></i></button>
-                </div>
-                {state[apiKey] && state[apiKey].map((droplet, index) => {
-
-                  return (
-                    <div className="row mb-1" key={droplet.id}>
-                      <div className="col-2">
-                          <Style.Name>{droplet.name}</Style.Name>
-                      </div>
-                      <div className="col-3">
-                      <Style.ID>#{droplet.id}</Style.ID>
-                      </div>
-                      <div className="col-3">
-                        <div className="btn-group">
-                          <button className="btn btn-sm btn-outline-primary" onClick={updatePerf(droplet.id, index, apiKey)}><i className="bi bi-graph-up"></i></button>
-                          <button className="btn btn-sm btn-outline-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}><i className="bi bi-arrow-clockwise"></i></button>
-                          <button className="btn btn-sm btn-outline-primary" onClick={deleteDroplet(droplet.id, apiKey)}><i className="bi bi-trash"></i></button>
-                        </div>
-                      </div>
-                      <div className="col-4">
-                        <Style.ChartContainer>
-                          {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
-                        </Style.ChartContainer>
-                      </div>
-                    </div>
-                  )
-                })}
+          {chunk(apiKeys, 2).map(([f,l]) => (
+            <div className="row">
+              <div className="col-6">
+                <Fleet
+                  key={f}
+                  apiKey={f}
+                  state={state}
+                  loadingState={loadingState}
+                  getPerf={getPerf}
+                  getData={getData}
+                  createDroplet={createDroplet}
+                  createDroplets={createDroplets}
+                  fillDroplets={fillDroplets}
+                  deleteAllDroplet={deleteAllDroplet}
+                  updatePerf={updatePerf}
+                  hardRestart={hardRestart}
+                  deleteDroplet={deleteDroplet}
+                />
               </div>
+              {l && <div className="col-6">
+              <Fleet
+                key={l}
+                apiKey={l}
+                state={state}
+                loadingState={loadingState}
+                getPerf={getPerf}
+                getData={getData}
+                createDroplet={createDroplet}
+                createDroplets={createDroplets}
+                fillDroplets={fillDroplets}
+                deleteAllDroplet={deleteAllDroplet}
+                updatePerf={updatePerf}
+                hardRestart={hardRestart}
+                deleteDroplet={deleteDroplet}
+              />
+              </div>}
             </div>
           ))}
         </>}
