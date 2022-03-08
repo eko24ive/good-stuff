@@ -300,11 +300,11 @@ function App() {
     <div className='container-fluid mt-3'>
       <>
         <div className="row">
-          <div className="col-9">
+          <div className="col-md-9 col-xs-12">
             <label className="form-label">Api keys (newline):</label>
             <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"} placeholder={"apikey1\napikey2\napikey3"}/>
           </div>
-          <div className="col-3">
+          <div className="col-md-3 col-xs-12">
             <label className="form-label">Login:</label>
             <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
             <label className="form-label">Password:</label>
@@ -352,10 +352,9 @@ function App() {
         <hr className='my-4' />
         {apiKeys.length > 0 && <>
           {chunk(apiKeys, 2).map(([f,l]) => (
-            <div className="row">
-              <div className="col-6">
+            <div className="row" key={f+l}>
+              <div className="col-lg-6 col-md-12 col-xs-12">
                 <Fleet
-                  key={f}
                   apiKey={f}
                   state={state}
                   loadingState={loadingState}
@@ -370,9 +369,8 @@ function App() {
                   deleteDroplet={deleteDroplet}
                 />
               </div>
-              {l && <div className="col-6">
+              {l && <div className="col-lg-6 col-md-12 col-xs-12">
               <Fleet
-                key={l}
                 apiKey={l}
                 state={state}
                 loadingState={loadingState}

@@ -67,7 +67,7 @@ const ProgressContainer = styled.div`
 `
 
 const Fleet = styled.div`
-  height: 470px;
+  height: 490px;
   overflow-y: scroll;
 `
 
