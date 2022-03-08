@@ -1,2 +1,2 @@
 //Procfile
-web: node backend/index.js
+web: bin/boot
