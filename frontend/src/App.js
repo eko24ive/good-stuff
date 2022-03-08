@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,6 +12,8 @@ import {
 import moment from 'moment';
 import { Line } from 'react-chartjs-2';
 
+import api from './api/api'
+
 import Style from './App.style'
 
 ChartJS.register(
@@ -23,8 +25,6 @@ ChartJS.register(
   Tooltip,
   Legend
 );
-
-const API = window.location.origin.indexOf('localhost') === -1 ? '' : 'http://localhost:9898'
 
 function App() {
   const $ta = useRef();
@@ -51,11 +51,24 @@ function App() {
     }))
   }
 
-  const getAllData = async (keys) => {
+  const getData = useCallback(async (apiKey) => {
+    setLoading(apiKey, true)
+    const droplets = await api.getAllDroplets({
+      apiKey
+    })
+
+    setState(prev => ({
+      ...prev,
+      [apiKey]: droplets
+    }))
+    setLoading(apiKey, false)
+  },[])
+
+  const getAllData = useCallback(async (keys) => {
     for (let apiKey of keys) {
       getData(apiKey)
     }
-  }
+  }, [getData])
 
   useEffect(() => {
     const storedKeys = localStorage.getItem('keys')
@@ -74,50 +87,15 @@ function App() {
 
       getAllData(p)
     }
-  }, [])
-
-  const getApi = async (route, options) => {
-    const { headers, ...restOptions } = options;
-
-    const r = await fetch(`${API}/${route}`, {
-      headers: {
-        ...headers
-      },
-      ...restOptions
-    })
-      .then(res => res.json())
-
-    return r
-  }
-
-  async function getData(apiKey) {
-    setLoading(apiKey, true)
-    const droplets = await getApi('all', {
-      headers: {
-        'X-Token': apiKey,
-      }
-    })
-
-    setState(prev => ({
-      ...prev,
-      [apiKey]: droplets
-    }))
-    setLoading(apiKey, false)
-  }
+  }, [apiKeys.length, creds.password, getAllData])
 
   const getPerf = apiKey => async () => {
     const dropletsIds = state[apiKey].map(d => d.id)
     setLoading(apiKey, true)
 
-    const perf = await getApi(`perf`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        droplets: dropletsIds
-      })
+    const perf = await api.getPerformanceByApiKey({
+      apiKey,
+      dropletsIds
     })
 
     setState(prev => ({
@@ -133,14 +111,6 @@ function App() {
   const options = {
     responsive: true,
     maintainAspectRatio: true,
-    layout: {
-      // padding: {
-      //   top: 0,
-      //   left: -10,
-      //   bottom: -15,
-      // },
-    },
-
     animation: {
       duration: 0,
     },
@@ -185,15 +155,10 @@ function App() {
   const updatePerf = (id, index, apiKey) => async () => {
     setLoading(apiKey, true)
 
-    const perf = await getApi(`perf/${id}`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
+    const perf = await api.getPerformanceById({
+      id,
+      apiKey
     })
-
-
 
     setState(prev => {
       let np
@@ -223,15 +188,16 @@ function App() {
     }
     setLoading(apiKey, true)
 
-    await getApi(`restart/${id}/${name}`, {
-      headers: {
-        'X-Token': apiKey,
-      }
+    await api.restart({
+      id,
+      name,
+      apiKey,
+      creds,
+      exec: getExecCommand()
     })
 
     await getData(apiKey)
     setLoading(apiKey, false)
-
   }
 
   const deleteDroplet = (id, apiKey) => async () => {
@@ -240,12 +206,9 @@ function App() {
     }
     setLoading(apiKey, true)
 
-    await getApi(`${id}`, {
-      method: 'DELETE',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
+    await api.deleteDroplet({
+      id,
+      apiKey
     })
 
     setState(prev => ({
@@ -267,13 +230,7 @@ function App() {
     }
     setLoading(apiKey, true)
 
-    await getApi(`all`, {
-      method: 'DELETE',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
-    })
+    await api.deleteAllDroplets({apiKey})
 
     await getData(apiKey)
     setState(prev => ({
@@ -343,22 +300,18 @@ function App() {
 
     setLoading(apiKey, true)
 
-    await getApi(`create/${name}`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        creds,
-        exec: getExecCommand()
-      })
+    await api.createDroplet({
+      name,
+      creds,
+      exec: getExecCommand(),
+      apiKey,
     })
 
     await getData(apiKey)
     setLoading(apiKey, false)
 
   }
+
   const createDroplets = apiKey => async () => {
     if (!window.confirm('are you sure')) {
       return null
@@ -371,22 +324,15 @@ function App() {
     setLoading(apiKey, true)
 
 
-    await getApi(`createAll`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        names,
-        creds,
-        exec: getExecCommand()
-      })
+    await api.createDroplets({
+      names,
+      creds,
+      exec: getExecCommand(),
+      apiKey
     })
 
     await getData(apiKey)
     setLoading(apiKey, false)
-
   }
 
   const fillDroplets = apiKey => async () => {
@@ -399,16 +345,11 @@ function App() {
     setLoading(apiKey, true)
 
 
-    await getApi(`fill/${prefix}`, {
-      method: 'POST',
-      headers: {
-        'X-Token': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        creds,
-        exec: getExecCommand(),
-      })
+    await api.fillDroplets({
+      prefix,
+      creds,
+      exec: getExecCommand(),
+      apiKey
     })
 
     await getData(apiKey)
@@ -478,28 +419,32 @@ function App() {
               <div className="card-body">
                 <h5 className="card-title">{apiKey}</h5>
                 <div className="btn-group mb-3">
-                  <button className="btn btn-sm btn-primary" onClick={getPerf(apiKey)}>Get Performance</button>
-                  <button className="btn btn-sm btn-primary" onClick={() => getData(apiKey)}>Refresh</button>
-                  <button className="btn btn-sm btn-primary" onClick={createDroplet(apiKey)}>Create</button>
-                  <button className="btn btn-sm btn-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
-                  <button className="btn btn-sm btn-primary" onClick={fillDroplets(apiKey)}>Fill remaining</button>
-                  <button className="btn btn-sm btn-danger" onClick={deleteAllDroplet(apiKey)}>Delete All</button>
+                  <button className="btn btn-outline-primary" onClick={getPerf(apiKey)}><i className="bi bi-graph-up"></i></button>
+                  <button className="btn btn-outline-primary" onClick={() => getData(apiKey)}><i className="bi bi-arrow-clockwise"></i></button>
+                </div>
+                <div className="btn-group mb-3 mx-3">
+                  <button className="btn btn-outline-primary" onClick={createDroplet(apiKey)}><i className="bi bi-plus-lg"></i></button>
+                  <button className="btn btn-outline-primary" onClick={createDroplets(apiKey)}>Create droplets</button>
+                  <button className="btn btn-outline-primary" onClick={fillDroplets(apiKey)}>Fill remaining</button>
+                </div>
+                <div className="btn-group mb-3">
+                  <button className="btn btn-outline-danger" onClick={deleteAllDroplet(apiKey)}><i className="bi bi-trash"></i></button>
                 </div>
                 {state[apiKey] && state[apiKey].map((droplet, index) => {
 
                   return (
                     <div className="row mb-1" key={droplet.id}>
-                      <div className="col-4">
-                        <Style.Ident>
+                      <div className="col-2">
                           <Style.Name>{droplet.name}</Style.Name>
-                          <Style.ID>#{droplet.id}</Style.ID>
-                        </Style.Ident>
                       </div>
-                      <div className="col-4">
+                      <div className="col-3">
+                      <Style.ID>#{droplet.id}</Style.ID>
+                      </div>
+                      <div className="col-3">
                         <div className="btn-group">
-                          <button className="btn btn-sm btn-primary" onClick={updatePerf(droplet.id, index, apiKey)}>update perf</button>
-                          <button className="btn btn-sm btn-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}>hard restart</button>
-                          <button className="btn btn-sm btn-primary" onClick={deleteDroplet(droplet.id, apiKey)}>delete</button>
+                          <button className="btn btn-sm btn-outline-primary" onClick={updatePerf(droplet.id, index, apiKey)}><i className="bi bi-graph-up"></i></button>
+                          <button className="btn btn-sm btn-outline-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}><i className="bi bi-arrow-clockwise"></i></button>
+                          <button className="btn btn-sm btn-outline-primary" onClick={deleteDroplet(droplet.id, apiKey)}><i className="bi bi-trash"></i></button>
                         </div>
                       </div>
                       <div className="col-4">
