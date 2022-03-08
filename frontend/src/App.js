@@ -53,7 +53,7 @@ function App() {
 
   const getAllData = async (keys) => {
     for (let apiKey of keys) {
-      await getData(apiKey)
+      getData(apiKey)
     }
   }
 
@@ -420,8 +420,8 @@ function App() {
       <>
         <div className="row">
           <div className="col-9">
-            <label className="form-label">Api key:</label>
-            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"} />
+            <label className="form-label">Api keys (newline):</label>
+            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"} placeholder={"apikey1\napikey2\napikey3"}/>
           </div>
           <div className="col-3">
             <label className="form-label">Login:</label>

@@ -51,7 +51,7 @@ const ProgressContainer = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10rem;
+    font-size: 8rem;
 
     & i {
       animation-name: spin;
