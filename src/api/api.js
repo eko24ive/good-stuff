@@ -214,7 +214,7 @@ const getPerformanceById = async ({
 const deleteAllDroplets = async ({
   apiKey
 }) => {
-  let { droplets } = await requestDO('droplets', {
+  let { droplets } = await requestDO('droplets?per_page=200', {
     headers: {
       Authorization: `Bearer ${apiKey}`,
     }

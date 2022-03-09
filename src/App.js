@@ -60,7 +60,7 @@ function App() {
       [apiKey]: droplets
     }))
     setLoading(apiKey, false)
-  },[])
+  }, [])
 
   const getAllData = useCallback(async (keys) => {
     keys.forEach(apiKey => getData(apiKey))
@@ -170,7 +170,7 @@ function App() {
     }
     setLoading(apiKey, true)
 
-    await api.deleteAllDroplets({apiKey})
+    await api.deleteAllDroplets({ apiKey })
 
     await getData(apiKey)
     setState(prev => ({
@@ -302,7 +302,7 @@ function App() {
         <div className="row">
           <div className="col-md-9 col-xs-12">
             <label className="form-label">Api keys (newline):</label>
-            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"} placeholder={"apikey1\napikey2\napikey3"}/>
+            <textarea ref={$ta} className="form-control mb-1" defaultValue={apiKeys && apiKeys.join('\n')} rows={"4"} cols={"75"} placeholder={"apikey1\napikey2\napikey3"} />
           </div>
           <div className="col-md-3 col-xs-12">
             <label className="form-label">Login:</label>
@@ -351,8 +351,8 @@ function App() {
         </div>
         <hr className='my-4' />
         {apiKeys.length > 0 && <>
-          {chunk(apiKeys, 2).map(([f,l]) => (
-            <div className="row" key={f+l}>
+          {chunk(apiKeys, 2).map(([f, l]) => (
+            <div className="row" key={f + l}>
               <div className="col-lg-6 col-md-12 col-xs-12">
                 <Fleet
                   apiKey={f}
@@ -370,20 +370,20 @@ function App() {
                 />
               </div>
               {l && <div className="col-lg-6 col-md-12 col-xs-12">
-              <Fleet
-                apiKey={l}
-                state={state}
-                loadingState={loadingState}
-                getPerf={getPerf}
-                getData={getData}
-                createDroplet={createDroplet}
-                createDroplets={createDroplets}
-                fillDroplets={fillDroplets}
-                deleteAllDroplet={deleteAllDroplet}
-                updatePerf={updatePerf}
-                hardRestart={hardRestart}
-                deleteDroplet={deleteDroplet}
-              />
+                <Fleet
+                  apiKey={l}
+                  state={state}
+                  loadingState={loadingState}
+                  getPerf={getPerf}
+                  getData={getData}
+                  createDroplet={createDroplet}
+                  createDroplets={createDroplets}
+                  fillDroplets={fillDroplets}
+                  deleteAllDroplet={deleteAllDroplet}
+                  updatePerf={updatePerf}
+                  hardRestart={hardRestart}
+                  deleteDroplet={deleteDroplet}
+                />
               </div>}
             </div>
           ))}

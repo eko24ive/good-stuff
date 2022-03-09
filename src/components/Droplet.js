@@ -58,10 +58,10 @@ const Droplet = ({
   return (
     <div className="row mb-1" key={droplet.id}>
       <div className="col-2">
-          <Style.Name>{droplet.name}</Style.Name>
+        <Style.Name>{droplet.name}</Style.Name>
       </div>
       <div className="col-3">
-      <Style.ID>#{droplet.id}</Style.ID>
+        <Style.ID>#{droplet.id}</Style.ID>
       </div>
       <div className="col-3">
         <div className="btn-group">

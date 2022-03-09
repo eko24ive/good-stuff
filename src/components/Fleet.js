@@ -16,7 +16,7 @@ const Fleet = ({
   deleteDroplet,
 }) => {
   return (
-    <Style.Fleet className="card mb-2" key={apiKey}>
+    <div className="card mb-2" key={apiKey}>
       {loadingState[apiKey] && <Style.ProgressContainer>
         <i className="bi bi-arrow-clockwise"></i>
       </Style.ProgressContainer>}
@@ -34,20 +34,22 @@ const Fleet = ({
         <div className="btn-group mb-3">
           <button className="btn btn-danger" onClick={deleteAllDroplet(apiKey)}><i className="bi bi-trash"></i></button>
         </div>
-        {state[apiKey] && state[apiKey].map((droplet, index) => {
-          return <Droplet
-            key={droplet.id}
-            droplet={droplet}
-            state={state}
-            updatePerf={updatePerf}
-            hardRestart={hardRestart}
-            deleteDroplet={deleteDroplet}
-            apiKey={apiKey}
-            index={index}
-          />
-        })}
+        <Style.Fleet>
+          {state[apiKey] && state[apiKey].map((droplet, index) => {
+            return <Droplet
+              key={droplet.id}
+              droplet={droplet}
+              state={state}
+              updatePerf={updatePerf}
+              hardRestart={hardRestart}
+              deleteDroplet={deleteDroplet}
+              apiKey={apiKey}
+              index={index}
+            />
+          })}
+        </Style.Fleet>
       </div>
-    </Style.Fleet>
+    </div>
   )
 }
 
