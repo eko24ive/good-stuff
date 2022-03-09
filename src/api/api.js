@@ -1,27 +1,27 @@
 const dateNow = () => Math.floor(Date.now() * 0.001)
 
+const instanceTag = "vperf:mkd:32"
+
 const getInstanceTemplate = ({ login, password, names, name, exec }) => {
   const processedExec = exec.join('\n');
 
-  if (names) {
-    return JSON.stringify({
-      "names": names,
-      "region": "fra1",
-      "size": "s-1vcpu-1gb",
-      "image": "ubuntu-20-04-x64",
-      "user_data": processedExec
-    })
+  const instanceTemplate = {
+    "region": "fra1",
+    "size": "s-1vcpu-1gb",
+    "image": "ubuntu-20-04-x64",
+    "user_data": processedExec,
+    "tags": [
+      instanceTag
+    ],
   }
 
-  if (name) {
-    return JSON.stringify({
-      "name": name,
-      "region": "fra1",
-      "size": "s-1vcpu-1gb",
-      "image": "ubuntu-20-04-x64",
-      "user_data": processedExec
-    })
+  if (names) {
+    instanceTemplate.names = names
+  } else {
+    instanceTemplate.name = name
   }
+
+  return JSON.stringify(instanceTemplate)
 }
 
 const requestDO = async (resource, opts = {}) => {
@@ -62,7 +62,6 @@ const fillDroplets = async ({
   exec,
   apiKey
 }) => {
-
   let { droplets } = await requestDO('droplets?per_page=200', {
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -214,20 +213,11 @@ const getPerformanceById = async ({
 const deleteAllDroplets = async ({
   apiKey
 }) => {
-  let { droplets } = await requestDO('droplets?per_page=200', {
+  await requestDO(`droplets?tag_name=${instanceTag}`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
-    }
-  })
-  droplets = droplets.map(d => d.id)
-
-  droplets.forEach(async (id) => {
-    await requestDO(`droplets/${id}`, {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-      method: 'DELETE',
-    })
+    },
+    method: 'DELETE',
   })
 
   return { ok: 'ok' }

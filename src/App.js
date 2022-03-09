@@ -296,6 +296,91 @@ function App() {
     setLoading(apiKey, false)
   }
 
+  const deleteEverything = async () => {
+    if (!window.confirm('are you sure')) {
+      return null
+    }
+
+    if (!window.confirm('are you double sure')) {
+      return null
+    }
+
+    if (!window.confirm('are you triple sure')) {
+      return null
+    }
+
+    apiKeys.forEach(apiKey => {
+      setLoading(apiKey, true)
+    })
+
+    await Promise.all(apiKeys.map(async apiKey => {
+      return await api.deleteAllDroplets({ apiKey })
+    }))
+
+    apiKeys.forEach(async apiKey => {
+      getData(apiKey)
+    })
+  }
+
+  const restartEverything = async () => {
+    if (!window.confirm('are you sure')) {
+      return null
+    }
+
+    const prefix = prompt("prefix:")
+
+    apiKeys.forEach(apiKey => {
+      setLoading(apiKey, true)
+    })
+
+    await Promise.all(apiKeys.map(async apiKey => {
+      return await api.deleteAllDroplets({ apiKey })
+    }))
+
+    await Promise.all(apiKeys.map(async apiKey => {
+      return await api.fillDroplets({
+        prefix,
+        creds,
+        exec: getExecCommand(),
+        apiKey
+      })
+    }))
+
+    apiKeys.forEach(async apiKey => {
+      getData(apiKey)
+    })
+  }
+
+  const fillEverthing = () => {
+    if (!window.confirm('are you sure')) {
+      return null
+    }
+
+    const prefix = prompt("prefix:")
+
+    apiKeys.forEach(apiKey => {
+      setLoading(apiKey, true)
+    })
+
+    apiKeys.forEach(async apiKey => {
+      await api.fillDroplets({
+        prefix,
+        creds,
+        exec: getExecCommand(),
+        apiKey
+      })
+
+      await getData(apiKey)
+    })
+  }
+
+
+  const refreshEverything = () => {
+    apiKeys.forEach(async apiKey => {
+      getData(apiKey)
+    })
+  }
+
   return (
     <div className='container-fluid mt-3'>
       <>
@@ -343,11 +428,29 @@ function App() {
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
         <hr />
         <div className="col">
-          <div className="row">
-            {apiKeys.length > 0 && <>
+          {apiKeys.length > 0 && <div className="row">
+            <div className="col-md-2">
               <h5>Total instances: {apiKeys.map(k => state[k]).flat().length}</h5>
-            </>}
-          </div>
+            </div>
+            <div className="col-md-10">
+              <button className="btn btn-primary btn-lg me-2" onClick={refreshEverything}>
+                <i className="bi bi-arrow-clockwise"></i> Everything
+              </button>
+              <button className='btn btn-danger btn-lg me-2' onClick={deleteEverything}>
+                <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                Delete Everything
+              </button>
+              <button className='btn btn-warning btn-lg me-2' onClick={restartEverything}>
+                <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                Restart Everything
+              </button>
+              <button className='btn btn-warning btn-lg' onClick={fillEverthing}>
+                <i className="bi bi-exclamation-triangle-fill me-1"></i>
+                Fill Everything
+              </button>
+
+            </div>
+          </div>}
         </div>
         <hr className='my-4' />
         {apiKeys.length > 0 && <>
