@@ -57,20 +57,20 @@ const Droplet = ({
 
   return (
     <div className="row mb-1" key={droplet.id}>
-      <div className="col-2">
-        <Style.Name>{droplet.name}</Style.Name>
-      </div>
-      <div className="col-3">
-        <Style.ID>#{droplet.id}</Style.ID>
+      <div className="col-4">
+        <Style.Name>
+          {droplet.name}<br/>
+          <code>#{droplet.id}</code>
+        </Style.Name>
       </div>
       <div className="col-3">
         <div className="btn-group">
-          <button className="btn btn-sm btn-primary" onClick={updatePerf(droplet.id, index, apiKey)}><i className="bi bi-graph-up"></i></button>
-          <button className="btn btn-sm btn-primary" onClick={hardRestart(droplet.id, droplet.name, apiKey)}><i className="bi bi-arrow-clockwise"></i></button>
-          <button className="btn btn-sm btn-primary" onClick={deleteDroplet(droplet.id, apiKey)}><i className="bi bi-trash"></i></button>
+          <button className="btn btn-sm btn-primary" data-tooltip="Fetch performance" onClick={updatePerf(droplet.id, index, apiKey)}><i className="bi bi-graph-up"></i></button>
+          <button className="btn btn-sm btn-primary" data-tooltip="Hard restart droplet" onClick={hardRestart(droplet.id, droplet.name, apiKey)}><i className="bi bi-wrench-adjustable"></i></button>
+          <button className="btn btn-sm btn-primary" data-tooltip="Delete droplet" onClick={deleteDroplet(droplet.id, apiKey)}><i className="bi bi-trash"></i></button>
         </div>
       </div>
-      <div className="col-4">
+      <div className="col-5">
         <Style.ChartContainer>
           {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
         </Style.ChartContainer>

@@ -237,6 +237,18 @@ const deleteDroplet = async ({
   return d
 }
 
+const getAccountData = async ({
+  apiKey
+}) => {
+  let { account } = await requestDO('account', {
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+    }
+  })
+
+  return account
+}
+
 const api = {
   getAllDroplets,
   getPerformanceByApiKey,
@@ -246,7 +258,8 @@ const api = {
   deleteAllDroplets,
   createDroplet,
   createDroplets,
-  fillDroplets
+  fillDroplets,
+  getAccountData
 }
 
 export default api

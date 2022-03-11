@@ -32,6 +32,7 @@ function App() {
   const [state, setState] = useState({
     perf: {}
   })
+  const [accountsData, setAccountsData] = useState({})
 
   const [apiKeys, setApiKeys] = useState([])
   const [creds, setCreds] = useState({
@@ -54,6 +55,14 @@ function App() {
     const droplets = await api.getAllDroplets({
       apiKey
     })
+    const account = await api.getAccountData({
+      apiKey
+    })
+
+    setAccountsData(prev => ({
+      ...prev,
+      [apiKey]: account
+    }))
 
     setState(prev => ({
       ...prev,
@@ -124,7 +133,7 @@ function App() {
   }
 
   const hardRestart = (id, name, apiKey) => async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to hard restart droplet?')) {
       return null
     }
     setLoading(apiKey, true)
@@ -142,7 +151,7 @@ function App() {
   }
 
   const deleteDroplet = (id, apiKey) => async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to delete droplet')) {
       return null
     }
     setLoading(apiKey, true)
@@ -165,7 +174,7 @@ function App() {
   }
 
   const deleteAllDroplet = apiKey => async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to delete ALL droplets for this API key?')) {
       return null
     }
     setLoading(apiKey, true)
@@ -232,7 +241,7 @@ function App() {
   }
 
   const createDroplet = apiKey => async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to create droplet?')) {
       return null
     }
 
@@ -253,7 +262,7 @@ function App() {
   }
 
   const createDroplets = apiKey => async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to create MULTIPLE droplets?')) {
       return null
     }
 
@@ -276,7 +285,7 @@ function App() {
   }
 
   const fillDroplets = apiKey => async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to fill droplets for this API key?')) {
       return null
     }
 
@@ -297,15 +306,15 @@ function App() {
   }
 
   const deleteEverything = async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to delete EVERY droplet?')) {
       return null
     }
 
-    if (!window.confirm('are you double sure')) {
+    if (!window.confirm('Are you DOUBLE sure?')) {
       return null
     }
 
-    if (!window.confirm('are you triple sure')) {
+    if (!window.confirm('Are you TRIPLE sure?')) {
       return null
     }
 
@@ -323,7 +332,7 @@ function App() {
   }
 
   const restartEverything = async () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to restart EVERY droplet?')) {
       return null
     }
 
@@ -352,7 +361,7 @@ function App() {
   }
 
   const fillEverthing = () => {
-    if (!window.confirm('are you sure')) {
+    if (!window.confirm('Are you sure you want to fill EVERY api key with droplets?')) {
       return null
     }
 
@@ -434,7 +443,7 @@ function App() {
             </div>
             <div className="col-md-10">
               <button className="btn btn-primary btn-lg me-2" onClick={refreshEverything}>
-                <i className="bi bi-arrow-clockwise"></i> Everything
+                <i className="bi bi-arrow-hardRestartwise"></i> Everything
               </button>
               <button className='btn btn-danger btn-lg me-2' onClick={deleteEverything}>
                 <i className="bi bi-exclamation-triangle-fill me-1"></i>
@@ -460,6 +469,7 @@ function App() {
                 <Fleet
                   apiKey={f}
                   state={state}
+                  accountsData={accountsData}
                   loadingState={loadingState}
                   getPerf={getPerf}
                   getData={getData}
@@ -476,6 +486,7 @@ function App() {
                 <Fleet
                   apiKey={l}
                   state={state}
+                  accountsData={accountsData}
                   loadingState={loadingState}
                   getPerf={getPerf}
                   getData={getData}
