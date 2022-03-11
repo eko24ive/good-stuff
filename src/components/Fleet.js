@@ -16,7 +16,6 @@ const Fleet = ({
   hardRestart,
   deleteDroplet,
 }) => {
-  console.log(accountsData[apiKey])
   return (
     <div className="card mb-4" key={apiKey}>
       {loadingState[apiKey] && <Style.ProgressContainer>

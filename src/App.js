@@ -35,6 +35,7 @@ function App() {
   const [accountsData, setAccountsData] = useState({})
 
   const [apiKeys, setApiKeys] = useState([])
+  const [passwordAsText, setPasswordAsText] = useState(false)
   const [creds, setCreds] = useState({
     login: '',
     password: ''
@@ -401,8 +402,8 @@ function App() {
           <div className="col-md-3 col-xs-12">
             <label className="form-label">Login:</label>
             <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
-            <label className="form-label">Password:</label>
-            <input type="text" ref={$password} className="form-control mb-1" defaultValue={creds.password} />
+            <label className="form-label">Password <button className="btn btn-outline-primary btn-sm" onClick={() => setPasswordAsText(!passwordAsText)}><i className={`bi ${passwordAsText ? 'bi-eye-slash' : 'bi-eye'}`}></i></button></label>
+            <input type={passwordAsText ? "text" : "password"} ref={$password} className="form-control mb-1" defaultValue={creds.password} />
           </div>
         </div>
         <div className="row my-2">

@@ -1,0 +1,3 @@
+button, button:focus, button:active, button:hover {
+  box-shadow: none !important;
+}
