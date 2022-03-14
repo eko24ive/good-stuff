@@ -463,7 +463,7 @@ function App() {
               cols={"75"}
               className="form-control mb-1"
               onChange={() => { }}
-              value={'#!/bin/bash\ncd /root\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/dc.txt && chmod +x a.sh && nohup ./a.sh -n {login} -d {dropletname} -f ' + domainsURL + ' >/dev/null 2>&1 &'}
+              value={'#!/bin/bash\ncd /root\necho vm.swappiness=0 | sudo tee -a /etc/sysctl.conf\nwget -O a.sh https://raw.githubusercontent.com/eko24ive/miniature-palm-tree/main/dc.txt && chmod +x a.sh && nohup ./a.sh -n {login} -d {dropletname} -f ' + domainsURL + ' >/dev/null 2>&1 &'}
             />}
           </div>
         </div>
