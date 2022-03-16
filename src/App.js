@@ -510,7 +510,7 @@ function App() {
             </div>
             <div className="col-md-10">
               <button className="btn btn-primary btn-lg me-2" onClick={refreshEverything}>
-                <i className="bi bi-arrow-hardRestartwise"></i> Everything
+                <i className="bi bi-arrow-clockwise"></i> Everything
               </button>
               <button className='btn btn-danger btn-lg me-2' onClick={deleteEverything}>
                 <i className="bi bi-exclamation-triangle-fill me-1"></i>
