@@ -9,10 +9,23 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { chunk } from 'lodash'
+import { chunk, uniq } from 'lodash'
+import { uniqueNamesGenerator, adjectives, colors } from 'unique-names-generator';
 
 import api from './api/api'
 import Fleet from './components/Fleet'
+
+const uniqueNamesGeneratorConfig = {
+  dictionaries: [adjectives, colors],
+  separator: '-',
+  length: 2,
+};
+
+const getUniquePrefix = () => {
+  const prefix = uniqueNamesGenerator(uniqueNamesGeneratorConfig);
+
+  return prefix;
+}
 
 ChartJS.register(
   CategoryScale,
@@ -232,17 +245,35 @@ function App() {
     getAllData(keys)
   }
 
-  const getExecCommand = ({dropletname}) => {
+  const getExecCommand = ({ dropletname }) => {
     let exec = $exec.current.value.trim();
 
     exec = exec.replace('{password}', creds.password);
     exec = exec.replace('{login}', creds.login);
 
-    if(strategy === 'V2') {
+    if (strategy === 'V2') {
       exec = exec.replace('{dropletname}', dropletname || `d-${Date.now()}`);
     }
 
     return exec.split('\n')
+  }
+
+  const getNamePrefixByApiKey = (apiKey) => {
+    const names = state[apiKey].map(
+      droplets => {
+        const dropletNameParts = droplets.name.split('-')
+
+        return dropletNameParts.slice(0, dropletNameParts.length - 1).join('-')
+      }
+    )
+
+    let prefix = uniq(names)[0]
+
+    if (!prefix) {
+      prefix = getUniquePrefix()
+    }
+
+    return `${prefix}-`
   }
 
   const createDroplet = apiKey => async () => {
@@ -250,20 +281,21 @@ function App() {
       return null
     }
 
-    const name = prompt("enter name:")
+    const prefix = getNamePrefixByApiKey(apiKey)
+
+    const newName = `${prefix}-${state[apiKey].length + 1}`
 
     setLoading(apiKey, true)
 
     await api.createDroplet({
-      name,
+      name: newName,
       creds,
-      exec: getExecCommand({dropletname: name}),
+      exec: getExecCommand({ dropletname: newName }),
       apiKey,
     })
 
     await getData(apiKey)
     setLoading(apiKey, false)
-
   }
 
   const createDroplets = apiKey => async () => {
@@ -272,16 +304,16 @@ function App() {
     }
 
     const amount = prompt("amount:")
-    const prefix = prompt("prefix:")
+    const prefix = getNamePrefixByApiKey(apiKey)
 
     const names = Array(Number(amount)).fill(1).map((c, x) => `${prefix}${x + 1}`)
-    setLoading(apiKey, true)
 
+    setLoading(apiKey, true)
 
     await api.createDroplets({
       names,
       creds,
-      exec: getExecCommand({dropletname: names}),
+      exec: getExecCommand({ dropletname: names }),
       apiKey
     })
 
@@ -289,15 +321,15 @@ function App() {
     setLoading(apiKey, false)
   }
 
-  const _fillDroplets = async ({prefix, apiKey}) =>  {
-    const droplets = await api.getAllDroplets({apiKey})
-    const account = await api.getAccountData({apiKey})
+  const _fillDroplets = async ({ prefix, apiKey }) => {
+    const droplets = await api.getAllDroplets({ apiKey })
+    const account = await api.getAccountData({ apiKey })
 
     const limit = account.droplet_limit - droplets.length;
 
     const names = Array(Number(limit)).fill(1).map((c, x) => `${prefix}${x + 1}`)
 
-    const execCommands = names.map(name => getExecCommand({dropletname: name}))
+    const execCommands = names.map(name => getExecCommand({ dropletname: name }))
 
     await api.fillDroplets({
       names,
@@ -312,7 +344,7 @@ function App() {
       return null
     }
 
-    const prefix = prompt("prefix:")
+    const prefix = getNamePrefixByApiKey(apiKey)
 
     setLoading(apiKey, true)
 
@@ -356,8 +388,6 @@ function App() {
       return null
     }
 
-    const prefix = prompt("prefix:")
-
     apiKeys.forEach(apiKey => {
       setLoading(apiKey, true)
     })
@@ -367,6 +397,8 @@ function App() {
     }))
 
     await Promise.all(apiKeys.map(async apiKey => {
+      const prefix = getNamePrefixByApiKey(apiKey)
+
       await _fillDroplets({
         prefix,
         apiKey
@@ -385,13 +417,13 @@ function App() {
       return null
     }
 
-    const prefix = prompt("prefix:")
-
     apiKeys.forEach(apiKey => {
       setLoading(apiKey, true)
     })
 
     apiKeys.forEach(async apiKey => {
+      const prefix = getNamePrefixByApiKey(apiKey)
+
       await _fillDroplets({
         prefix,
         apiKey
@@ -419,15 +451,17 @@ function App() {
           <div className="col-md-3 col-xs-12">
             <label className="form-label">Login:</label>
             <input type="text" ref={$login} className="form-control mb-1" defaultValue={creds.login} />
-            <label className="form-label">Password <button className="btn btn-outline-primary btn-sm" onClick={() => setPasswordAsText(!passwordAsText)}><i className={`bi ${passwordAsText ? 'bi-eye-slash' : 'bi-eye'}`}></i></button></label>
-            <input type={passwordAsText ? "text" : "password"} ref={$password} className="form-control mb-1" defaultValue={creds.password} />
+            {strategy === 'custom' && <>
+              <label className="form-label">Password <button className="btn btn-outline-primary btn-sm" onClick={() => setPasswordAsText(!passwordAsText)}><i className={`bi ${passwordAsText ? 'bi-eye-slash' : 'bi-eye'}`}></i></button></label>
+              <input type={passwordAsText ? "text" : "password"} ref={$password} className="form-control mb-1" defaultValue={creds.password} />
+            </>}
           </div>
         </div>
         <div className="row my-2">
           <div className="col">
             <h4>Strategy</h4>
             <div className="form-check form-check-inline">
-              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('V2')} checked={strategy === 'V2'}/>
+              <input className="form-check-input" type="radio" name="flexRadioDefault" id="flexRadioDefault2" onChange={() => setStrategy('V2')} checked={strategy === 'V2'} />
               <label className="form-check-label" htmlFor="flexRadioDefault2">
                 V2
               </label>

@@ -1,6 +1,6 @@
 import Style from '../App.style'
-import moment from 'moment';
-import { Line } from 'react-chartjs-2';
+// import moment from 'moment';
+// import { Line } from 'react-chartjs-2';
 
 const Droplet = ({
   droplet,
@@ -11,7 +11,7 @@ const Droplet = ({
   apiKey,
   index,
 }) => {
-  const options = {
+  /* const options = {
     responsive: true,
     maintainAspectRatio: true,
     animation: {
@@ -53,28 +53,30 @@ const Droplet = ({
     };
 
     return <Line options={options} data={data} />
-  }
+  } */
 
   return (
     <div className="row mb-1" key={droplet.id}>
-      <div className="col-4">
+      <div className="col-10">
         <Style.Name>
-          {droplet.name}<br/>
-          <code>#{droplet.id}</code>
+          {droplet.name}
+          <Style.ID>
+            <small><code>#{droplet.id}</code></small>
+          </Style.ID>
         </Style.Name>
       </div>
-      <div className="col-3">
+      <div className="col-2">
         <div className="btn-group">
-          <button className="btn btn-sm btn-primary" data-tooltip="Fetch performance" onClick={updatePerf(droplet.id, index, apiKey)}><i className="bi bi-graph-up"></i></button>
+          {/* <button className="btn btn-sm btn-primary" data-tooltip="Fetch performance" onClick={updatePerf(droplet.id, index, apiKey)}><i className="bi bi-graph-up"></i></button> */}
           <button className="btn btn-sm btn-primary" data-tooltip="Hard restart droplet" onClick={hardRestart(droplet.id, droplet.name, apiKey)}><i className="bi bi-wrench-adjustable"></i></button>
           <button className="btn btn-sm btn-primary" data-tooltip="Delete droplet" onClick={deleteDroplet(droplet.id, apiKey)}><i className="bi bi-trash"></i></button>
         </div>
       </div>
-      <div className="col-5">
+      {/* <div className="col-5">
         <Style.ChartContainer>
           {renderChart(state?.perf?.[apiKey]?.[index]?.data?.result[0]?.values)}
         </Style.ChartContainer>
-      </div>
+      </div> */}
     </div>
   )
 }

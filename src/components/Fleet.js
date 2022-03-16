@@ -30,7 +30,7 @@ const Fleet = ({
       </ul>
       <div className="card-body">
         <div className="btn-group mb-3">
-          <button className="btn btn-primary" data-tooltip="Get perforamce" onClick={getPerf(apiKey)}><i className="bi bi-graph-up"></i></button>
+          {/* <button className="btn btn-primary" data-tooltip="Get perforamce" onClick={getPerf(apiKey)}><i className="bi bi-graph-up"></i></button> */}
           <button className="btn btn-primary" data-tooltip="Fetch droplets" onClick={() => getData(apiKey)}><i className="bi bi-arrow-clockwise"></i></button>
         </div>
         <div className="btn-group mb-3 mx-3">
