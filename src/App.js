@@ -212,14 +212,18 @@ function App() {
 
     const keys = $ta.current.value.split('\n').map(k => k.trim()).filter(k => k !== undefined && k !== '' && k !== null)
     const login = $login.current.value.trim()
-    const password = $password.current.value.trim()
+    let password = '';
+
+    if (strategy !== 'V2') {
+      password = $password.current.value.trim()
+    }
 
     if (keys.length === 0) {
       alert('invalid keys')
       return;
     }
 
-    if (!login || !password) {
+    if (!login || (!password && strategy !== 'V2')) {
       alert('invalid credentials')
       return;
     }
